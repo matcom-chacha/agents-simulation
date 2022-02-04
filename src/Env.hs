@@ -15,14 +15,13 @@ data Element = Dirt {row :: Int, column :: Int}
 --Arguments: Number of rows, no. of cols, no. of obstacles, no. of robots, no. of babys, initial amount of dirt 
 --Return: An array of Elements, the initialized bard
 initializeEnv :: Int -> Int ->  Int -> Int -> Int -> Int -> [Element]
-initializeEnv rows cols obsts robots babys dirt = env
+initializeEnv rows cols obsts robots babys dirt = finalEnv
     where
         playpenEnv = allocatePlaypen rows cols babys
-        env = allocateObstacles rows cols obsts playpenEnv 
-        -- obstEnv = allocateObstacles rows cols obsts playpenEnv 
---         robotEnv = allocateRobots rows cols robots obstEnv
---         babyEnv = allocateBabys rows cols babys robotEnv
---         finalEnv = allocateDirt rows cols dirt babyEnv
+        obstEnv = allocateObstacles rows cols obsts playpenEnv 
+        robotEnv = allocateRobots rows cols robots obstEnv
+        babyEnv = allocateBabys rows cols babys robotEnv
+        finalEnv = allocateDirt rows cols dirt babyEnv
 
 -- initializeEnv rows cols obsts robots babys dirt = env
 --     where
@@ -104,7 +103,27 @@ allocateObstacles rows cols obsts env  = [Obstacle x y] ++ allocateObstacles row
                                         where
                                             (x, y) = generateRandomPos rows cols env
 
--- allocateObstacles
--- allocateRobots
--- allocateBabys
--- allocateDirt
+
+------------------------------------------------Robots-------------------------------------------------
+allocateRobots :: Int -> Int -> Int -> [Element] -> [Element] 
+allocateRobots rows cols 0 env  = env  
+allocateRobots rows cols robots env  = [Robot x y False] ++ allocateRobots rows cols (robots-1) env
+                                        where
+                                            (x, y) = generateRandomPos rows cols env
+
+
+------------------------------------------------Babys-------------------------------------------------
+allocateBabys :: Int -> Int -> Int -> [Element] -> [Element] 
+allocateBabys rows cols 0 env  = env  
+allocateBabys rows cols babys env  = [Child x y False] ++ allocateBabys rows cols (babys-1) env
+                                        where
+                                            (x, y) = generateRandomPos rows cols env
+
+
+------------------------------------------------Dirt-------------------------------------------------
+allocateDirt :: Int -> Int -> Int -> [Element] -> [Element] 
+allocateDirt rows cols 0 env  = env  
+allocateDirt rows cols dirt env  = [Dirt x y] ++ allocateDirt rows cols (dirt-1) env
+                                        where
+                                            (x, y) = generateRandomPos rows cols env
+
