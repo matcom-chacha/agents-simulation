@@ -23,14 +23,6 @@ initializeEnv rows cols obsts robots babys dirt = finalEnv
         babyEnv = allocateBabys rows cols babys robotEnv
         finalEnv = allocateDirt rows cols dirt babyEnv
 
--- initializeEnv rows cols obsts robots babys dirt = env
---     where
---         playpenEnv = allocatePlaypen rows cols babys
---         obstEnv = allocateObstacles rows cols obsts playpenEnv 
---         robotEnv = allocateRobots rows cols robots obstEnv
---         babyEnv = allocateBabys rows cols babys robotEnv
---         finalEnv = allocateDirt rows cols dirt babyEnv
-
 ------------------------------------------------GENERAL-------------------------------------------------
 
 
@@ -88,13 +80,6 @@ allocatePlaypenWDir r c x y rp cp p env | freePos nextx nexty env && withinBound
 -- X Generar un orientacion (Horizontal/ Vertical). Inicialmente se pondra directo horzontal
 --Comenzar a annadir celdas del corral mientras se pueda hacia una direccion (Por ahora comenzando siempre a la derecha)
 --Cuando ya no se pueda ir a la otra direccion o si ya se acabaron las celdas por disponer terminar
-
--- allocatePlaypen r c 0 = []
--- allocatePlaypen r c p = [Playpen x y] ++ [allocatePlaypen r c (p-1)]
---                 where 
---                     x = 
---                     y = 
-
 
 ------------------------------------------------Obstacles-------------------------------------------------
 allocateObstacles :: Int -> Int -> Int -> [Element] -> [Element] 
