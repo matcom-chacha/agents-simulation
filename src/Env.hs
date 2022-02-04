@@ -15,10 +15,11 @@ data Element = Dirt {row :: Int, column :: Int}
 --Arguments: Number of rows, no. of cols, no. of obstacles, no. of robots, no. of babys, initial amount of dirt 
 --Return: An array of Elements, the initialized bard
 initializeEnv :: Int -> Int ->  Int -> Int -> Int -> Int -> [Element]
-initializeEnv rows cols obsts robots babys dirt = allocatePlaypen rows cols babys
-    -- where
-    --     env = allocatePlaypen rows cols babys
---         obstEnv = allocateObstacles rows cols obsts playpenEnv 
+initializeEnv rows cols obsts robots babys dirt = env
+    where
+        playpenEnv = allocatePlaypen rows cols babys
+        env = allocateObstacles rows cols obsts playpenEnv 
+        -- obstEnv = allocateObstacles rows cols obsts playpenEnv 
 --         robotEnv = allocateRobots rows cols robots obstEnv
 --         babyEnv = allocateBabys rows cols babys robotEnv
 --         finalEnv = allocateDirt rows cols dirt babyEnv
@@ -31,15 +32,8 @@ initializeEnv rows cols obsts robots babys dirt = allocatePlaypen rows cols baby
 --         babyEnv = allocateBabys rows cols babys robotEnv
 --         finalEnv = allocateDirt rows cols dirt babyEnv
 
+------------------------------------------------GENERAL-------------------------------------------------
 
---GENERATE THE PLAYPEN In A MORE GENERAL WAY (MAYBE TAKING AN INITIAL POSITION AND EXPANDING IT)
---allocates the 1xp plapypen whitin a rxc board 
-allocatePlaypen :: Int -> Int -> Int -> [Element]
-allocatePlaypen r c p = newEnv
-                       where
-                            (initialx, initialy) = generateRandomPos r c []--new board empty
-                            (env1, newp) = allocatePlaypenWDir r c initialx initialy 0 1 (p-1) [Playpen initialx initialy]
-                            (newEnv, lastp) = allocatePlaypenWDir r c initialx initialy 0 (-1) newp env1
 
 --Scan all elements to ensure the position is not taken
 freePos :: Int -> Int -> [Element] -> Bool
@@ -61,6 +55,18 @@ generateRandomPos maxX maxY board | freePos newx newy board = (newx, newy)
                             where 
                                 newx = myRandom maxX
                                 newy = myRandom maxY
+
+
+------------------------------------------------PLAYPEN-------------------------------------------------
+
+--GENERATE THE PLAYPEN In A MORE GENERAL WAY (MAYBE TAKING AN INITIAL POSITION AND EXPANDING IT)
+--allocates the 1xp plapypen whitin a rxc board 
+allocatePlaypen :: Int -> Int -> Int -> [Element]
+allocatePlaypen r c p = newEnv
+                       where
+                            (initialx, initialy) = generateRandomPos r c []--new board empty
+                            (env1, newp) = allocatePlaypenWDir r c initialx initialy 0 1 (p-1) [Playpen initialx initialy]
+                            (newEnv, lastp) = allocatePlaypenWDir r c initialx initialy 0 (-1) newp env1
 
 --Allocates a specific playpen piece and recursivelly call to allocate next pos
 --Arguments:
@@ -89,6 +95,14 @@ allocatePlaypenWDir r c x y rp cp p env | freePos nextx nexty env && withinBound
 --                 where 
 --                     x = 
 --                     y = 
+
+
+------------------------------------------------Obstacles-------------------------------------------------
+allocateObstacles :: Int -> Int -> Int -> [Element] -> [Element] 
+allocateObstacles rows cols 0 env  = env  
+allocateObstacles rows cols obsts env  = [Obstacle x y] ++ allocateObstacles rows cols (obsts-1) env
+                                        where
+                                            (x, y) = generateRandomPos rows cols env
 
 -- allocateObstacles
 -- allocateRobots
