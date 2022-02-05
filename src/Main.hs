@@ -8,9 +8,23 @@ import EnvChanges
 
 main :: IO ()
 main = do
-  let oldEnv = [Baby 0 0 False, Baby 0 2 False, Obstacle 0 1]
-  let newEnv = [Baby 0 0 False, Baby 0 2 False, Obstacle 0 1]
+  let oldEnv = [Baby 0 0 False, Baby 1 1 False, Obstacle 3 3]
+  let newEnv = [Baby 0 1 False, Baby 1 1 False, Obstacle 3 3]
+  -- let gridPos = getGridPos 5 5 0 0
+  -- let babies = takeBabies oldEnv oldEnv
+  -- let gridPartners = getGridPartners babies gridPos
+  -- let availablePos = getGridFreePos gridPos newEnv 
+  -- print( availablePos)
+  -- let dirtToGenerate = getCorrespondingDirt gridPartners
+  -- print( dirtToGenerate)
+  -- let babysDirt = allocateNewDirt dirtToGenerate availablePos newEnv
+  -- print(babysDirt)
+
+  -- print(removeNthElement 2 [(1,0), (1,1), (1,2)]) 
+
+  -- let newEnv = [Baby 0 0 False, Baby 0 2 False, Obstacle 0 1]
   print (createDirt 3 3 oldEnv newEnv) 
+
   -- let a = [] ++ [Baby 1 2 True] ++ [Playpen 1 3] ++ []
   -- print a
   -- let env = [Baby 0 0 False, Baby 0 2 False, Playpen 0 3,  Obstacle 0 1]

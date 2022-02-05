@@ -4,13 +4,6 @@ import Random
 
 -------------------------------------------------Babie's moves---------------------------------------------------
 
---Takes an envrionment end return a list with the free babies found on it
--- takeBabies :: [Element] -> [Element] -> [Element]
--- takeBabies [] env = []  
--- takeBabies (Baby x y c:rest) env | not ( inPlayPen (Baby x y c) env ) = [Baby x y c] ++ takeBabies rest env
---                              | otherwise =  takeBabies rest env
--- takeBabies (e:rest) env = takeBabies rest env
-
 --Takes an envrionment end return a list with the free babies found on it 
 --(free babies aka babies withouth company and not in playpens)
 takeBabies :: [Element] -> [Element] -> [Element]
@@ -120,17 +113,18 @@ createDirt :: Int -> Int -> [Element] -> [Element] -> [Element]
 createDirt rows cols oldEnv newEnv = finalEnv
                             where
                                 babies = takeBabies oldEnv oldEnv
-                                finalEnv = createDirtAux rows cols babies oldEnv newEnv
+                                finalEnv = createDirtAux rows cols babies babies oldEnv newEnv
 
-createDirtAux :: Int -> Int -> [Element] -> [Element] -> [Element] -> [Element]
-createDirtAux rows cols [] oldEnv newEnv = newEnv 
-createDirtAux rows cols (Baby x y wc:rest) oldEnv newEnv =  babysDirt ++ createDirtAux rows cols rest oldEnv newEnv
+--Note que se cuentan en una casilla los bebes no cargados ni en corral
+createDirtAux :: Int -> Int -> [Element]-> [Element] -> [Element] -> [Element] -> [Element]
+createDirtAux rows cols [] babies oldEnv newEnv = newEnv 
+createDirtAux rows cols (Baby x y wc:rest) babies oldEnv newEnv =  createDirtAux rows cols rest babies oldEnv (babysDirt ++ newEnv)
                             where
                                 gridPos = getGridPos rows cols x y
-                                partners = getGridPartners oldEnv gridPos--including itself
+                                partners = getGridPartners babies gridPos--including itself
                                 availablePos = getGridFreePos gridPos newEnv 
                                 dirtToGenerate = getCorrespondingDirt partners
-                                babysDirt = allocateNewDirt dirtToGenerate availablePos newEnv
+                                babysDirt = allocateNewDirt dirtToGenerate availablePos newEnv--get dirt generate by current baby
 
 --Return an array with the coordinates of a grid centered in x, y
 getGridPos :: Int -> Int -> Int -> Int -> [(Int, Int)]
@@ -169,7 +163,7 @@ matchCoordinates x y [] = False
 matchCoordinates x y ((cx, cy):rest) | x == cx && y == cy = True
                                      | otherwise = matchCoordinates x y rest
 
---Return an array with the coordinates of the free positions in the nev in a grid centered at x y
+--Return an array with the coordinates of the free positions in the newEnv in a grid centered at x y
 getGridFreePos :: [(Int, Int)] -> [Element] -> [(Int, Int)]
 getGridFreePos [] newEnv = []
 getGridFreePos ((x, y):rest) newEnv | freePos x y newEnv = [(x,y)] ++ getGridFreePos rest newEnv
@@ -177,14 +171,16 @@ getGridFreePos ((x, y):rest) newEnv | freePos x y newEnv = [(x,y)] ++ getGridFre
 
 --Return the amount of dirty tiles to generate by a baby if it has a given number of partners
 getCorrespondingDirt :: Int -> Int
-getCorrespondingDirt partners | partners == 1 = 1
-                              | partners == 2 = 1--separated for clarity
-                              | partners >= 3 = 2
+getCorrespondingDirt partners | partners == 1 = myRandom 2
+                              | partners == 2 = myRandom 2--separated for clarity
+                              | partners >= 3 = myRandom 3--every robot in the grid can generate up to 2 tiles of dirt
 
 --Allocate tiles with dirt in env picking one of the available positions of a given grid
 allocateNewDirt :: Int -> [(Int, Int)] -> [Element] -> [Element]
-allocateNewDirt 0 availablePos env = env
-allocateNewDirt dirtToGenerate [] env = env
+-- allocateNewDirt 0 availablePos env = env
+-- allocateNewDirt dirtToGenerate [] env = env
+allocateNewDirt 0 availablePos env = []
+allocateNewDirt dirtToGenerate [] env = []
 allocateNewDirt dirtToGenerate availablePos env = newDirt ++ allocateNewDirt (dirtToGenerate - 1) newAvailablePos env
                         where
                             randIndex = myRandom (length availablePos) 
@@ -195,12 +191,3 @@ allocateNewDirt dirtToGenerate availablePos env = newDirt ++ allocateNewDirt (di
 removeNthElement :: Int -> [(Int, Int)] -> [(Int, Int)] 
 removeNthElement 0 (e: rest) = rest 
 removeNthElement index (e: rest) = [e] ++ removeNthElement (index - 1) rest
-
---Tomando una cuadricula correspondiente a una casilla como la cuadricula de 3x3 centrada en la casilla:
---Por cada bebe que se haya movido del environment anterior (q no este cargado ni en un corral) calcular el no de companneros que hay en su cuadricula
---Asignarle tanta suciedad como no de companneros tenga:
---0 : 0-1
---1 : 0 -1
---2 o mas: 0-2
---Segun las posiciones disponibles en esa cuadricula pero ubicada en el nuevo environment generar de ls suciedad correspondiente tanta como sea posible
---Nota: aunque un ninno no se mueva se considera q geenra suciedad a medida que juega
