@@ -8,7 +8,12 @@ import EnvChanges
 
 main :: IO ()
 main = do
-  let env = [Baby 0 0 False, Baby 0 2 False, Playpen 0 3,  Obstacle 0 1]
+  let oldEnv = [Baby 0 0 False, Baby 0 2 False, Obstacle 0 1]
+  let newEnv = [Baby 0 0 False, Baby 0 2 False, Obstacle 0 1]
+  print (createDirt 3 3 oldEnv newEnv) 
+  -- let a = [] ++ [Baby 1 2 True] ++ [Playpen 1 3] ++ []
+  -- print a
+  -- let env = [Baby 0 0 False, Baby 0 2 False, Playpen 0 3,  Obstacle 0 1]
   -- print( takeBabies env env)
   -- print( inPlayPen (Baby 0 0 False) env)
 
