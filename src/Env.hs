@@ -3,11 +3,10 @@ module Env where
 import Random
 
 --Data type to represent the elements present in the environment
--- data Element = Dirt Int Int | Obstacle Int Int | Playpen Int Int | Child Int Int Bool | Robot Int Int Bool deriving Show
 data Element = Dirt {row :: Int, column :: Int} 
               | Obstacle {row :: Int, column :: Int}  
               | Playpen {row :: Int, column :: Int}  
-              | Child {row :: Int, column :: Int, wcompany :: Bool}  
+              | Baby {row :: Int, column :: Int, wcompany :: Bool}  
               | Robot {row :: Int, column :: Int, wcompany :: Bool} deriving Show
 
 
@@ -100,7 +99,7 @@ allocateRobots rows cols robots env  = [Robot x y False] ++ allocateRobots rows 
 ------------------------------------------------Babys-------------------------------------------------
 allocateBabys :: Int -> Int -> Int -> [Element] -> [Element] 
 allocateBabys rows cols 0 env  = env  
-allocateBabys rows cols babys env  = [Child x y False] ++ allocateBabys rows cols (babys-1) env
+allocateBabys rows cols babys env  = [Baby x y False] ++ allocateBabys rows cols (babys-1) env
                                         where
                                             (x, y) = generateRandomPos rows cols env
 
