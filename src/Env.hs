@@ -1,13 +1,15 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Env where
 
 import Random
+import Data.Data
 
 --Data type to represent the elements present in the environment
 data Element = Dirt {row :: Int, column :: Int} 
               | Obstacle {row :: Int, column :: Int}  
               | Playpen {row :: Int, column :: Int}  
               | Baby {row :: Int, column :: Int, wcompany :: Bool}  
-              | Robot {row :: Int, column :: Int, wcompany :: Bool} deriving Show
+              | Robot {row :: Int, column :: Int, wcompany :: Bool} deriving (Show, Data, Typeable)
 
 
 --Set board for the simulation

@@ -1,31 +1,43 @@
+-- {-# LANGUAGE DeriveDataTypeable #-}
 module Main where
 import Random
 import Env
 import EnvChanges
- 
+-- import Data.Data
 
 main :: IO ()
 main = do
+  let env = [Baby 0 0 False, Baby 0 2 False, Playpen 0 2,  Obstacle 0 1]
+  print( takeBabies  env env)
+  -- print( inPlayPen (Baby 0 0 False) [Baby 0 0 False, Playpen 0 0,  Obstacle 0 1] )
+  -- let result = show $ toConstr (X 3)
+  -- let result = show $ toConstr (Baby 1 2 False)
+  
+  -- let result = toConstr (Baby 1 2 False)
+  -- let comparison = (show $ toConstr (Baby 1 2 False)) == "Baby"
+  -- print result
+  -- print comparison
+
   -- let newEnv = if 0 /= 1 && 2 /=  
   --                               then reallocateObstacleFromTo 0 1 0 2 [Baby 0 0 False, Obstacle 0 1]
   --                               else [Baby 0 0 False, Obstacle 0 1]
   -- print(newEnv)
   -- print (reallocateObstacleFromTo 0 1 0 2 [Baby 0 0 False, Obstacle 0 1])
 
-  let env = [Baby 0 0 False, Obstacle 0 1, Obstacle 0 2]
-  let x = 0
-  let y = 0
-  -- print( moveBabies 3 3 [Baby 1 2 False, Obstacle 0 0])
-  let randDir = myRandom 5
-  print(randDir)
-  let (xdir, ydir) = getDirection randDir
-  print(xdir)
-  print(ydir)
-  let (nextx, nexty) = nextValidPos x y xdir ydir 5 5 env
-  print(nextx)
-  print(nexty)
-  let finalEnv = reorganizeRoom x y xdir ydir nextx nexty env
-  print(finalEnv)
+  -- let env = [Baby 0 0 False, Obstacle 0 1, Obstacle 0 2]
+  -- let x = 0
+  -- let y = 0
+  -- -- print( moveBabies 3 3 [Baby 1 2 False, Obstacle 0 0])
+  -- let randDir = myRandom 5
+  -- print(randDir)
+  -- let (xdir, ydir) = getDirection randDir
+  -- print(xdir)
+  -- print(ydir)
+  -- let (nextx, nexty) = nextValidPos x y xdir ydir 3 3 env
+  -- print(nextx)
+  -- print(nexty)
+  -- let finalEnv = reorganizeRoom x y xdir ydir nextx nexty env
+  -- print(finalEnv)
 
   -- print (not (wcompany (Baby 1 2 False)))
   -- print(myRandom 5)

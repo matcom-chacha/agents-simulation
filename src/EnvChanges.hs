@@ -1,19 +1,33 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module EnvChanges where
 import Env 
 import Random
+import Data.Data
 
 
---Takes an envrionment end return a list with the babies found on it
-takeBabies :: [Element] -> [Element]
-takeBabies [] = []  
-takeBabies (Baby x y c:rest) = [Baby x y c] ++ takeBabies rest 
-takeBabies (e:rest) = takeBabies rest 
+-------------------------------------------------Babie's moves---------------------------------------------------
+
+--Takes an envrionment end return a list with the free babies found on it
+takeBabies :: [Element] -> [Element] -> [Element]
+takeBabies [] env = []  
+takeBabies (Baby x y c:rest) env | not ( inPlayPen (Baby x y c) env ) = [Baby x y c] ++ takeBabies rest env
+                             | otherwise =  takeBabies rest env
+takeBabies (e:rest) env = takeBabies rest env
+
+inPlayPen :: Element -> [Element] -> Bool
+inPlayPen (Baby x y w) [] = False
+inPlayPen (Baby x y w) (e:rest) | column e == x && row e == y && (show $ toConstr e) == "Playpen" = True
+                                | otherwise = inPlayPen (Baby x y w) rest
+                                -- | column e == x && row e == y && (show $ toConstr e) == "Baby" = inPlayPen (Baby x y w) rest
+                                -- | column e /= x || row e /= y = inPlayPen (Baby x y w) rest
+                                -- | otherwise = False
 
 --Returns a new environment where all babies have moved to an adyacent position (or have decided to stay in the previous one)
 moveBabies :: Int -> Int -> [Element] -> [Element]
 moveBabies rows cols env = newEnv
                 where
-                    babiesPos = takeBabies env
+                    babiesPos = takeBabies env env
                     newEnv = moveBabiesAux rows cols env babiesPos
 
 --Moves all babies in the list provided
@@ -97,17 +111,6 @@ getDirection n = case n of 0 -> (0,0)
                            4 -> (-1,0)
 
 
---Metodo:
---Localizar los bebes.
---Por cada bebe eliminar su ocurrencia del environment viejo y annadir su nueva posicion al environment
-
---Para decidir la nueva posicion del bebe elegir de forma random un numero entre 0 y 4, donde:
---0-> no moverse
---1-> moverse a la derecha
---2-> moverse hacia abajo
---3-> moverse a la izquierda
---4-> moverse hacia arriba
---Verificar siempre que la direccion a la que se desea mover este disponible. 
---De tener un obstaculo o un cjto de estos moverlos todos un paso de ser posible. De no serlo no se mueve el bebe 
+-------------------------------------------------Dirt Creation---------------------------------------------------
 
 -- createDirt :: Int -> [Element] 
