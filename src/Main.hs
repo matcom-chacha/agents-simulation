@@ -5,10 +5,13 @@ import Env
 import EnvChanges
 -- import Data.Data
 
+
 main :: IO ()
 main = do
-  let env = [Baby 0 0 False, Baby 0 2 False, Playpen 0 2,  Obstacle 0 1]
-  print( takeBabies  env env)
+  let env = [Baby 0 0 False, Baby 0 2 False, Playpen 0 3,  Obstacle 0 1]
+  -- print( takeBabies env env)
+  -- print( inPlayPen (Baby 0 0 False) env)
+
   -- print( inPlayPen (Baby 0 0 False) [Baby 0 0 False, Playpen 0 0,  Obstacle 0 1] )
   -- let result = show $ toConstr (X 3)
   -- let result = show $ toConstr (Baby 1 2 False)

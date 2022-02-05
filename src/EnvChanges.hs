@@ -1,10 +1,6 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-
 module EnvChanges where
 import Env 
 import Random
-import Data.Data
-
 
 -------------------------------------------------Babie's moves---------------------------------------------------
 
@@ -17,11 +13,9 @@ takeBabies (e:rest) env = takeBabies rest env
 
 inPlayPen :: Element -> [Element] -> Bool
 inPlayPen (Baby x y w) [] = False
-inPlayPen (Baby x y w) (e:rest) | column e == x && row e == y && (show $ toConstr e) == "Playpen" = True
+inPlayPen (Baby x y w) (Playpen ex ey:rest) | ex == x && ey == y = True
                                 | otherwise = inPlayPen (Baby x y w) rest
-                                -- | column e == x && row e == y && (show $ toConstr e) == "Baby" = inPlayPen (Baby x y w) rest
-                                -- | column e /= x || row e /= y = inPlayPen (Baby x y w) rest
-                                -- | otherwise = False
+inPlayPen (Baby x y w) (e:rest) = inPlayPen (Baby x y w) rest
 
 --Returns a new environment where all babies have moved to an adyacent position (or have decided to stay in the previous one)
 moveBabies :: Int -> Int -> [Element] -> [Element]
