@@ -16,7 +16,7 @@ main = do
   let cols = 5
   let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 3, Dirt 3 2]
   let myMatrix = matrix rows cols $ \(i, j)-> (-1)
-  let (bfsMatrix, destination) = bfsForDirtAux [(0,0,0)] rows cols env myMatrix
+  let (bfsMatrix, destination) = bfsForDirtAux [(1,1,0)] rows cols env myMatrix
   print bfsMatrix
   print destination
   -- print( myMethod [2])

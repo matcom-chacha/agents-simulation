@@ -37,7 +37,7 @@ freePos x y (e:rest) = if row e == x && column e == y
 --Validates wether a given position is inside the board or not
 --Arguments: x y: coordinates to validate, maxx, maxy: max values of row-column presents in the board 
 withinBounds :: Int-> Int -> Int -> Int -> Bool
-withinBounds x y maxx maxy = x >= 0 && x < maxx && y >=0 && y < maxy
+withinBounds x y maxx maxy = x > 0 && x <= maxx && y >0 && y <= maxy
 
 -- LLEVAR LUEGO QUE EL TABLERO NO ESTE LLENO
 --generate position and validate disponibility in the board
@@ -45,8 +45,8 @@ generateRandomPos :: Int -> Int -> [Element]-> (Int, Int)
 generateRandomPos maxX maxY board | freePos newx newy board = (newx, newy)
                             | otherwise = generateRandomPos maxX maxY board
                             where 
-                                newx = myRandom maxX
-                                newy = myRandom maxY
+                                newx = myRandom 1 maxX
+                                newy = myRandom 1 maxY
 
 
 ------------------------------------------------PLAYPEN-------------------------------------------------

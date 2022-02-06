@@ -39,7 +39,7 @@ tryMoveBaby rows cols env baby = if not (wcompany baby) then finalEnv else env
                         where
                             x = row baby
                             y = column baby
-                            randDir = myRandom 5
+                            randDir = myRandom 0 4
                             (xdir, ydir) = getDirection randDir
                             (nextx, nexty) = nextValidPos x y xdir ydir rows cols env
                             finalEnv = reorganizeRoom x y xdir ydir nextx nexty env
@@ -171,9 +171,9 @@ getGridFreePos ((x, y):rest) newEnv | freePos x y newEnv = [(x,y)] ++ getGridFre
 
 --Return the amount of dirty tiles to generate by a baby if it has a given number of partners
 getCorrespondingDirt :: Int -> Int
-getCorrespondingDirt partners | partners == 1 = myRandom 2
-                              | partners == 2 = myRandom 2--separated for clarity
-                              | partners >= 3 = myRandom 3--every robot in the grid can generate up to 2 tiles of dirt
+getCorrespondingDirt partners | partners == 1 = myRandom 0 1
+                              | partners == 2 = myRandom 0 1--separated for clarity
+                              | partners >= 3 = myRandom 0 2--every robot in the grid can generate up to 2 tiles of dirt
 
 --Allocate tiles with dirt in env picking one of the available positions of a given grid
 allocateNewDirt :: Int -> [(Int, Int)] -> [Element] -> [Element]
@@ -183,7 +183,7 @@ allocateNewDirt 0 availablePos env = []
 allocateNewDirt dirtToGenerate [] env = []
 allocateNewDirt dirtToGenerate availablePos env = newDirt ++ allocateNewDirt (dirtToGenerate - 1) newAvailablePos env
                         where
-                            randIndex = myRandom (length availablePos) 
+                            randIndex = myRandom 0 ((length availablePos)-1) 
                             (dx, dy) = availablePos !! randIndex
                             newDirt = [Dirt dx dy]
                             newAvailablePos = removeNthElement randIndex availablePos
