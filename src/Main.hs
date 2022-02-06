@@ -3,13 +3,30 @@ module Main where
 import Random
 import Env
 import EnvChanges
+import Agents
 -- import Data.Data
+import Data.Matrix
 
+-- myMethod :: [Int] -> Int
+-- myMethod (e:rest) = e
 
 main :: IO ()
 main = do
-  let oldEnv = [Baby 0 0 False, Baby 1 1 False, Obstacle 3 3]
-  let newEnv = [Baby 0 1 False, Baby 1 1 False, Obstacle 3 3]
+  let rows = 5
+  let cols = 5
+  let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 3, Dirt 3 2]
+  let myMatrix = matrix rows cols $ \(i, j)-> (-1)
+  let (bfsMatrix, destination) = bfsForDirtAux [(0,0,0)] rows cols env myMatrix
+  print bfsMatrix
+  print destination
+  -- print( myMethod [2])
+
+  -- let mat = matrix 4 4 $ \(i,j) -> 2*i- j
+  -- let mat = matrix 4 4 (\(i,j) -> 2*i- j)
+  -- print(mat)
+    -- print (removeDirtAt 0 3 [Dirt 0 3 , Baby 0 1 False ])
+  -- let oldEnv = [Baby 0 0 False, Baby 1 1 False, Obstacle 3 3]
+  -- let newEnv = [Baby 0 1 False, Baby 1 1 False, Obstacle 3 3]
   -- let gridPos = getGridPos 5 5 0 0
   -- let babies = takeBabies oldEnv oldEnv
   -- let gridPartners = getGridPartners babies gridPos
@@ -23,7 +40,7 @@ main = do
   -- print(removeNthElement 2 [(1,0), (1,1), (1,2)]) 
 
   -- let newEnv = [Baby 0 0 False, Baby 0 2 False, Obstacle 0 1]
-  print (createDirt 3 3 oldEnv newEnv) 
+  -- print (createDirt 3 3 oldEnv newEnv) 
 
   -- let a = [] ++ [Baby 1 2 True] ++ [Playpen 1 3] ++ []
   -- print a
