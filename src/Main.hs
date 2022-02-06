@@ -21,15 +21,28 @@ main = do
   let myMatrix = setElem 0 (1, 1) initialMatrix
   print( myMatrix)
 
+  -- print(nrows myMatrix)
+  -- print(ncols myMatrix)
+
+
   -- let adjacents = getFreeAdyacents 1 1 rows cols env myMatrix 1 4
   -- print adjacents
   -- let (xdir, ydir) = getDirection 2
   -- let  np = nextPos 1 1 xdir ydir rows cols env
   -- print( np)
+
   let (bfsMatrix, destination) = bfsForDirtAux [(1,1,0)] rows cols env myMatrix
   print bfsMatrix
   print destination
-
+  let (dirtx, dirty, distance) = destination
+  let path = followTraceFromTo dirtx dirty distance 1 1 bfsMatrix-----------------------------------------------
+  print(path)
+  let nextTile = chooseNextTile path 2
+  print nextTile
+  let (nextStep, dist ) = bfsForDirt rows cols (Robot 1 1 True) env
+  print(nextStep)
+  print(dist)
+-- let (nextx, nexty)
   -- print( myMethod [2])
 
   -- let mat = matrix 4 4 $ \(i,j) -> 2*i- j

@@ -72,18 +72,31 @@ removeDirtAt x y (e:rest) = if row e == x && column e == y && ((show $ toConstr 
 --return the distance from the given robot to the closest dirty tile
 --and the next coordinates to visit in orden to reach the dirt
 
--- --ANNADIR ROWS COLS
--- bfsForDirt :: Int -> Int -> Element -> [Element] -> ((Int, Int), Int)
--- bfsForDirt rows cols robot env = ((nextx, nexty), distance)
---                         where 
---                             robotx = row x
---                             roboty = column x
---                             matrix = matrix rows cols $ \(i, j)-> (-1)--separar esta lista y el de abajo con un metodo propio del bfs
-                            --    discoverTimes = setElem 0 (robotx, roboty) matrix
---                             (tilesVisited, dirtFound) = bfsForDirtAux [(robotx,roboty, 0)] rows cols env discoverTimes
---                             (dirtx, dirty, distance) = dirtFound
---                             (nextx, nexty) = followTraceFromTo dirtx dirty distance robotx roboty distanceRequired tilesVisited
+-- LLEVAR CUANDO ESTAS ACCIONES SE PUEDEN REALIZAR O NO, POR EJEMPLO PUEDE NO HABER BEBES O NO HABER SUCIEDAD
 
+--ANNADIR ROWS COLS MOVER PARA EL METODO DE ARRIBA
+bfsForDirt ::  Int -> Int -> Element -> [Element] -> ((Int, Int), Int)
+bfsForDirt rows cols robot env = ((nextx, nexty), distance)
+                        where 
+                            robotx = row robot
+                            roboty = column robot
+                            possibleSteps = if wcompany robot then 2 else 1
+                            dtmatrix = matrix rows cols $ \(i, j)-> (-1)--separar esta linea y la de abajo con un metodo propio del bfs
+                            discoverTimes = setElem 0 (robotx, roboty) dtmatrix
+                            (tilesVisited, dirtFound) = bfsForDirtAux [(robotx,roboty, 0)] rows cols env discoverTimes
+                            (dirtx, dirty, distance) = dirtFound
+                            path = followTraceFromTo dirtx dirty distance robotx roboty tilesVisited
+                            (nextx, nexty) = chooseNextTile path possibleSteps
+
+
+--Chequear que indexar en listas empiece en 0, sino cambiar a un paso mas la indexacion abajo
+chooseNextTile :: [(Int, Int)] -> Int -> (Int, Int)
+chooseNextTile path possibleSteps | possibleSteps >=2 && length path > possibleSteps = path !! possibleSteps
+                                  | possibleSteps == 1 && length path > 1 = path !! 1
+                                  | otherwise = (-1,-1)
+
+--PARA ENCONTRAR LA SIGUIENTE CASILLA COLOCAR TENER EN CUENTA HASTA CUANTOS PASOS PUEDE DAR EL ROBOT Y LA DISTANCIA A LA UQE ESTA EL OBJETIVO
+-- osea, aunque el robot pueda dar dos pasos is el objetivo mas cerca esta a tan solo uno se camina un paso
 
 --bfs from a source x,y to closest dirt. 
 --Returns a tuple with: a matrix with the visited positions and their descovering times
@@ -127,10 +140,6 @@ getFreeAdyacents x y rows cols env visitedMatrix distance n = adyacent ++ getFre
                                     then 
                                         [(nextx, nexty, distance)]
                                     else []
-                                 
-                                    -- adayacents1 = getDirection 2
-                                    -- adayacents2 = getDirection 3
-                                    -- adayacents3 = getDirection 4
 
 --Returns is the tile is not occupied by a robot or obstacle
 freeOfRobotObst :: Int -> Int -> [Element] -> Bool
@@ -149,6 +158,29 @@ nextPos x y xdir ydir rows cols env | withinBounds nextx nexty rows cols && free
 -- --Follow the path from source to destination in a list returned by a bfs
 -- --distanceRequired tell how many steps away from the destination are required
 -- followTraceFromTo dirtx dirty distance robotx roboty distanceRequired tilesVisited
+followTraceFromTo :: Int -> Int -> Int -> Int -> Int -> Matrix Int -> [(Int, Int)]--It is assumed that a path exist
+followTraceFromTo currentX currentY 0 destX destY visitMatrix | currentX == destX && currentY == destY = [(currentX, currentY)]
+                                                              | otherwise = [(-1,-1)]
+followTraceFromTo currentX currentY distance destX destY visitMatrix | nextx /= -1 = (followTraceFromTo nextx nexty (distance -1) destX destY visitMatrix) ++ [(currentX, currentY)]
+                            |otherwise = [(-1,-1)]
+                            where
+                                (nextx, nexty) = previousTileInPath currentX currentY (distance-1) visitMatrix
+
+--Find which adjacent has the distance
+previousTileInPath :: Int -> Int -> Int -> Matrix Int -> (Int, Int)
+previousTileInPath currentX currentY distance visitMatrix = previousTileInPathInDir currentX currentY distance visitMatrix 4
+
+--Find adjacents per direction and return the first one found with the given distance in the matrix
+previousTileInPathInDir :: Int -> Int -> Int -> Matrix Int -> Int -> (Int, Int)
+previousTileInPathInDir currentX currentY distance visitMatrix 0 = (-1,-1)
+previousTileInPathInDir currentX currentY distance visitMatrix n 
+        | withinBounds indexX indexY (nrows visitMatrix) (ncols visitMatrix) && visitMatrix ! (indexX, indexY) == distance 
+                    = (indexX, indexY)
+        | otherwise = previousTileInPathInDir currentX currentY distance visitMatrix (n-1)
+        where
+            (xDir, yDir) = getDirection n
+            indexX = currentX + xDir
+            indexY = currentY + yDir
 
 -- --move robot towards closest playpen EN ESTOS CASOS PASAR LA MAYOR CTDAD DE PASOS QUE PUEDE DAR EL ROBOT
 -- findPlaypen :: [Element] -> Element -> [Element]
