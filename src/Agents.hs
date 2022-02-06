@@ -78,8 +78,9 @@ removeDirtAt x y (e:rest) = if row e == x && column e == y && ((show $ toConstr 
 --                         where 
 --                             robotx = row x
 --                             roboty = column x
---                             matrix = matrix rows cols $ \(i, j)-> (-1)
---                             (tilesVisited, dirtFound) = bfsForDirtAux [(robotx,roboty, 0)] rows cols env matrix
+--                             matrix = matrix rows cols $ \(i, j)-> (-1)--separar esta lista y el de abajo con un metodo propio del bfs
+                            --    discoverTimes = setElem 0 (robotx, roboty) matrix
+--                             (tilesVisited, dirtFound) = bfsForDirtAux [(robotx,roboty, 0)] rows cols env discoverTimes
 --                             (dirtx, dirty, distance) = dirtFound
 --                             (nextx, nexty) = followTraceFromTo dirtx dirty distance robotx roboty distanceRequired tilesVisited
 
@@ -88,13 +89,21 @@ removeDirtAt x y (e:rest) = if row e == x && column e == y && ((show $ toConstr 
 --Returns a tuple with: a matrix with the visited positions and their descovering times
 --and a tuple with the dirt discovered
 bfsForDirtAux :: [(Int, Int, Int)] -> Int -> Int -> [Element] -> Matrix Int -> (Matrix Int, (Int, Int, Int))
-bfsForDirtAux [] rows cols env discoveredTimes = (discoveredTimes, (-1, -1, -1))--Not found
-bfsForDirtAux ((x, y, z):rest) rows cols env discoveredTimes | isDirt x y env = (discoveredTimes, (x, y, z))--objective found
-                                | otherwise  = bfsForDirtAux tilesToAnalize rows cols env newDiscoveredTimes
+bfsForDirtAux [] rows cols env discoverTimes = (discoverTimes, (-1, -1, -1))--Not found
+bfsForDirtAux ((x, y, z):rest) rows cols env discoverTimes | isDirt x y env = (discoverTimes, (x, y, z))--objective found
+                                | otherwise  = bfsForDirtAux tilesToAnalize rows cols env newDiscoverTimes
                                     where
-                                        newDiscoveredTimes = setElem z (x,y) discoveredTimes
-                                        tilesToAnalize = rest ++ getFreeAdyacents x y rows cols env discoveredTimes (z+1) 4
+                                        -- newDiscoveredTimes = setElem z (x,y) discoveredTimes--SETEAR ESTO APENAS SE ENCUENTRA
+                                        freeAdys = getFreeAdyacents x y rows cols env discoverTimes (z+1) 4
+                                        newDiscoverTimes = setDiscoverTimes freeAdys discoverTimes--SETEAR ESTO APENAS SE ENCUENTRA
+                                        tilesToAnalize = rest ++ freeAdys
 
+
+setDiscoverTimes :: [(Int, Int, Int)] -> Matrix Int -> Matrix Int
+setDiscoverTimes [] discoverTimes = discoverTimes 
+setDiscoverTimes ((x, y, dt):rest) discoverTimes = setDiscoverTimes rest newDiscoverTimes
+                                                        where
+                                                            newDiscoverTimes = setElem dt (x, y) discoverTimes
 
 --Por cada uno de sus adyacentes verificar que no sea dirt o que este libre
 
@@ -114,7 +123,7 @@ getFreeAdyacents x y rows cols env visitedMatrix distance n = adyacent ++ getFre
                     where
                         (xdir, ydir) = getDirection n
                         (nextx, nexty) = nextPos x y xdir ydir rows cols env-- /= -1 is an available position
-                        adyacent = if nextx /= -1 && ((visitedMatrix ! (nextx, nexty)) /= -1 ) --it has not been visited yet
+                        adyacent = if nextx /= -1 && ((visitedMatrix ! (nextx, nexty)) == -1 ) --it has not been visited yet
                                     then 
                                         [(nextx, nexty, distance)]
                                     else []

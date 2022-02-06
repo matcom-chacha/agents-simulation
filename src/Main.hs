@@ -14,11 +14,22 @@ main :: IO ()
 main = do
   let rows = 5
   let cols = 5
-  let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 3, Dirt 3 2]
-  let myMatrix = matrix rows cols $ \(i, j)-> (-1)
+  -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 3, Dirt 3 2]
+  -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 3]
+  let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
+  let initialMatrix = matrix rows cols $ \(i, j)-> (-1)
+  let myMatrix = setElem 0 (1, 1) initialMatrix
+  print( myMatrix)
+
+  -- let adjacents = getFreeAdyacents 1 1 rows cols env myMatrix 1 4
+  -- print adjacents
+  -- let (xdir, ydir) = getDirection 2
+  -- let  np = nextPos 1 1 xdir ydir rows cols env
+  -- print( np)
   let (bfsMatrix, destination) = bfsForDirtAux [(1,1,0)] rows cols env myMatrix
   print bfsMatrix
   print destination
+
   -- print( myMethod [2])
 
   -- let mat = matrix 4 4 $ \(i,j) -> 2*i- j
