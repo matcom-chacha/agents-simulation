@@ -9,36 +9,23 @@ import Data.Matrix
 
 -------------------------------------------------Agent 1------------------------------------------------------------
 
-
---Mantener la casa limpia 
---Robot da 1 paso sin ninno y 2 con el
---Al llegar a una casilla con bebe inmediatamente lo carga
---Puede dejar a un bebe en cualquier casilla(libre o con un corral vacio), se mantienen ahi ambos por ese turno
---Al llegar a una casilla con suciedad elige si limpiar o moverse en el proximo turno
-
---QUE EL METODO SEA UN OR DONDE SE EJECUTE UNA DE LAS POSIBLES ACCIONES QUE PUEDE HACER EL ROBOT
-
---COMO NO SE COMPRUEBA LA CASILLA ACTUAL VERIFICAR APARTE COSAS COMO SI EN LA CASILLA ACTUAL HAY UN BEBE Y NO LO TENGO CARGADO CARGARLO (AUNQUE ESTE CASO ESPECIFICAMENTE NO DEBE OCURRIR PUESTO QUE AL LLEHGAR A UNA CASILLA CON BEBE ESTE SE CARGA)
-
--- AL LLEGAR A UNA CASILLA CON BEBE ESTE SE CARGA MANEJAR ESTO CUANDO SE CAMINE
-
--- --SI NO SE PUEDE REALIZAR UNA ACCION IR A LA OTRA
--- moveR2B2 :: [Element] -> Element -> (Bool, [Element])
--- moveR2B2 env robot | uponDirt env robot && result1 = (result1, env1)
---                   | wChild && length (freeBabies) == 0 && result2 = (result2, env2)
---                   | wChild && length (freeBabies) > 0 && result3 = (result3, env3)
---                   | not wChild && result4= (result4, env4)-- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
---                 --   | otherwise = False
---                   where
---                       wChild = wcompany robot
---                       freeBabies = takeBabies env env
---                       (result1, env1) = cleanDirt env robot
---                       (result2, env2) = findDirt env robot
---                       (result3, env3) = findPlaypen env robot
---                       (result4, env4) = stimateBestAnswer env robot 
+--SI NO SE PUEDE REALIZAR UNA ACCION IR A LA OTRA
+moveR2B2 :: Int -> Int -> [Element] -> Element -> (Int, Bool, [Element])
+moveR2B2 rows cols env robot | uponDirt env robot && result1 = (1,result1, env1)--CAMBIAR POR EL METODO GENRICO IsElementVAtXY
+                  | wChild && length (freeBabies) == 0 && result2 = (2,result2, env2)
+                  | wChild && length (freeBabies) > 0 && result3 = (3,result3, env3)
+                  | not wChild && result4 = (4, result4, env4)-- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
+                  | otherwise = (5, False, env)
+                  where
+                      wChild = wcompany robot
+                      freeBabies = takeBabies env env
+                      (result1, env1) = cleanDirt env robot
+                      (result2, env2) = findDirt rows cols env robot 
+                      (result3, env3) = findPlaypen rows cols env robot 
+                      (result4, env4) = stimateBestAnswer rows cols env robot 
 
 
---return wether a given robot is positioned over a dirty tile or not
+--Return wether a given robot is positioned over a dirty tile or not
 uponDirt :: [Element] -> Element -> Bool 
 uponDirt [] robot = False
 uponDirt (Dirt x y : rest) robot | x == row robot && y == column robot = True
@@ -51,8 +38,7 @@ cleanDirt env robot = (True, newEnv)--CAMBIAR AL METODO GENERAL
                     where
                         newEnv = removeDirtAt (row robot) (column robot) env
 
---REVISADO
---remove a given element form the environment SI FUNCIONA EL TOCONST LLEVAR ESTO A UN METODO GENERICO
+--remove a given element form the environment SI FUNCIONA EL TOCONST LLEVAR ESTO A UN METODO GENERICO removeElementFrom
 removeDirtAt :: Int -> Int -> [Element] -> [Element]
 removeDirtAt x y [] = []
 removeDirtAt x y (e:rest) = if row e == x && column e == y && ((show $ toConstr (e)) == "Dirt")
@@ -87,11 +73,8 @@ reallocateRobot robot newX newY env | newX == -1 = env
                                     else 
                                         if robotWillTakeBaby
                                             then reallocateElementFromTo "Baby" newX newY False newX newY True env True
-                                            -- then reallocateElementFromTo "Baby" newX newY False newX newY True env True
                                         else 
                                             env
-                                -- newEnv = removeRobot robot env
-                                -- robotEnv = addRobot x y (wcompany robot) env
                                 finalEnv = reallocateElementFromTo "Robot" robotX robotY robotCarriesBaby newX newY robotWBaby babyEnv True 
 
 --Reallocate a specific element from a given postion to another --ELIMINAR REALLOCATEOBSTACLE y BABY
@@ -117,7 +100,6 @@ createElement elementName sourceX sourceY wcompany = case elementName of "Baby" 
                                                                          "Dirt" -> [Dirt sourceX sourceY]
                                                                          "Playpen" -> [Playpen sourceX sourceY]
 
--- NOT USED YET
 --Check wether a given element is in the environment (in a specific position) or not 
 isElementVAtXY :: String -> Int -> Int -> Bool -> [Element] -> Bool -> Bool
 isElementVAtXY elementName x y wc [] babyOrRobot = False
@@ -270,8 +252,8 @@ stimateBestAnswer:: Int -> Int -> [Element] -> Element -> (Bool, [Element])
 stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)--para que pase lo de abajo revisar el orden en que re realiza la comprobacion
                                       | otherwise = (False, env)
     where--aqui se le estaria pasando por arriba a los bebes en cunas (a los cargados en teoria no pq se evitan por el robot)
-        (bCoord, bDistance) = getNextStepToObjective rows cols robot "Baby" ["Robot", "Obstacle"] env 
-        (dCoord, dDistance) = getNextStepToObjective rows cols robot "Dirt" ["Robot", "Obstacle"] env 
+        (bCoord, bDistance) = getNextStepToObjective rows cols robot "Baby" ["Robot", "Obstacle", "Playpen"] env 
+        (dCoord, dDistance) = getNextStepToObjective rows cols robot "Dirt" ["Robot", "Obstacle", "Playpen"] env 
         (bX,bY) = bCoord--move robot towards closest baby 
         (dX,dY) = dCoord--move robot towards closest dirt
         (x,y) = if bX /= -1
@@ -284,6 +266,7 @@ stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)--para que pase 
                             else (bX,bY)
                     else (dX,dY)--at this point dX, dY can be -1 or not
         newEnv = reallocateRobot robot x y env
+
 --TENER EN CUENTA QUE EL BEBE NO ESTE EN LA CUNA NI CARGADADO POR OTRO ROBOT
 
 -- -- --Return a list with the free babies in the given environment (those outisde of playpens and that are not carried by any robot)

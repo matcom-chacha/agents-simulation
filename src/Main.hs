@@ -9,6 +9,27 @@ import Data.Matrix
 
 main :: IO ()
 main = do
+  -- Testing R2B2
+--   let rows = 5
+--   let cols = 5
+--   -- let env = [Robot 1 1 False, Robot 1 2 True, Baby 1 2 True,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]
+--   --Un solo paso hasta 2 1 en busca de la suciedad (metodo 4)
+
+--   -- let env = [Robot 1 1 True,  Baby 1 1 True, Robot 1 2 True, Baby 1 2 True,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]
+--   -- A limpiar con el bebe encima pq no hay otro suelto (metodo 2)
+
+--   -- let env = [Robot 1 1 True,  Baby 1 1 True, Baby 1 2 False,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]
+--   -- Llevar bebe a la cuna, da dos pasos hasta 2 2
+
+--   let env = [Robot 1 1 False,  Dirt 1 1, Baby 1 2 False,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]
+--   -- Remueve la suciedad de la casilla 1 1 (Metodo 1)
+--   let robot = Robot 1 1 True
+
+--   let (methodUsed, result, newEnv) = moveR2B2 rows cols env robot 
+--   print methodUsed
+--   print result
+--   print newEnv
+  
   -- let rows = 5
   -- let cols = 5
   -- let env = [Robot 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
@@ -41,16 +62,17 @@ main = do
   -- let finalEnv = reallocateElementFromTo "Robot" robotX robotY robotCarriesBaby newX newY robotWBaby babyEnv True 
   -- print finalEnv
 
-  let rows = 5
-  let cols = 5
-  let env = [Robot 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
-  -- let env = [Robot 1 1 True, Baby 1 1 True, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Robot 1 1 False, Robot 1 2 True, Baby 1 2 True,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
+  -- -- let env = [Robot 1 1 False, Playpen 1 2, Baby 1 2 False,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
+  -- -- let env = [Robot 1 1 True, Baby 1 1 True, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
 
-  -- let newEnv = reallocateElementFromTo "Baby" 1 2 False 1 2 True env True
-  -- let newEnv = reallocateRobot (Robot 1 1 False) 1 2 env
-  let (result, newEnv) = stimateBestAnswer rows cols env (Robot 1 1 False) 
+  -- -- let newEnv = reallocateElementFromTo "Baby" 1 2 False 1 2 True env True
+  -- -- let newEnv = reallocateRobot (Robot 1 1 False) 1 2 env
+  -- let (result, newEnv) = stimateBestAnswer rows cols env (Robot 1 1 False) 
   -- print(result)
-  print(newEnv)
+  -- print(newEnv)
 
   -- let rows = 5
   -- let cols = 5

@@ -5,7 +5,7 @@ import Random
 -------------------------------------------------Babie's moves---------------------------------------------------
 
 --Takes an envrionment end return a list with the free babies found on it 
---(free babies aka babies withouth company and not in playpens)
+--(free babies aka babies without company and not in playpens)
 takeBabies :: [Element] -> [Element] -> [Element]
 takeBabies [] env = []  
 takeBabies (Baby x y c:rest) env | not ( inPlayPen (Baby x y c) env ) && not c = [Baby x y c] ++ takeBabies rest env
