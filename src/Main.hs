@@ -9,14 +9,47 @@ import Data.Matrix
 
 main :: IO ()
 main = do
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Robot 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
+  
+  -- let newX = 1
+  -- let newY = 2
+
+  -- let robot = Robot 1 1 False
+  -- let robotX = row robot
+  -- let robotY = column robot
+  -- let robotCarriesBaby = wcompany robot
+  -- let robotWillTakeBaby = isElementVAtXY "Baby" newX newY False env True
+
+  -- print(robotCarriesBaby)
+  -- print(robotWillTakeBaby)
+  
+  -- let robotWBaby = robotCarriesBaby || robotWillTakeBaby
+  -- print robotWBaby
+  
+  -- let babyEnv = if robotCarriesBaby
+  --     then reallocateElementFromTo "Baby" robotX robotY True newX newY True env True
+  --     else 
+  --         if robotWillTakeBaby
+  --             then reallocateElementFromTo "Baby" newX newY False newX newY True env True
+  --             -- then reallocateElementFromTo "Baby" newX newY False newX newY True env True
+  --         else 
+  --             env
+  -- print babyEnv
+
+  -- let finalEnv = reallocateElementFromTo "Robot" robotX robotY robotCarriesBaby newX newY robotWBaby babyEnv True 
+  -- print finalEnv
+
   let rows = 5
   let cols = 5
   let env = [Robot 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
   -- let env = [Robot 1 1 True, Baby 1 1 True, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
 
   -- let newEnv = reallocateElementFromTo "Baby" 1 2 False 1 2 True env True
+  -- let newEnv = reallocateRobot (Robot 1 1 False) 1 2 env
   let (result, newEnv) = stimateBestAnswer rows cols env (Robot 1 1 False) 
-  print(result)
+  -- print(result)
   print(newEnv)
 
   -- let rows = 5

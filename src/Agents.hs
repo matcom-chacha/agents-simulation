@@ -82,7 +82,7 @@ reallocateRobot robot newX newY env | newX == -1 = env
                                 robotCarriesBaby = wcompany robot
                                 robotWillTakeBaby = isElementVAtXY "Baby" newX newY False env True
                                 robotWBaby = robotCarriesBaby || robotWillTakeBaby
-                                babyEnv = if robotWBaby
+                                babyEnv = if robotCarriesBaby
                                     then reallocateElementFromTo "Baby" robotX robotY True newX newY True env True
                                     else 
                                         if robotWillTakeBaby
