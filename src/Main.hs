@@ -9,11 +9,17 @@ import Data.Matrix
 
 main :: IO ()
 main = do
-  
-
+  let rows = 5
+  let cols = 5
   let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
-  let newEnv = reallocateRobot (Robot 1 1 True) 2 2 env
+
+  let (result, newEnv) = findDirt rows cols env (Robot 1 1 True)
+
+  print result
   print newEnv
+  -- let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
+  -- let newEnv = reallocateRobot (Robot 1 1 True) 2 2 env
+  -- print newEnv
 
   -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
   -- let newEnv = reallocateElementFromTo "Obstacle" 3 2 False 3 1 env False
@@ -28,7 +34,7 @@ main = do
   -- let rows = 5
   -- let cols = 5
   -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
-  -- let (nextStep, dist ) = bfsForDirt rows cols (Robot 1 1 False) env
+  -- let (nextStep, dist ) = bfsForDirt rows cols (Robot 1 1 True) "Dirt" ["Robot", "Obstacle"] env
   -- print(nextStep)
   -- print(dist)
 

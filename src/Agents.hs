@@ -67,7 +67,7 @@ findDirt :: Int -> Int -> [Element] -> Element -> (Bool, [Element])
 findDirt rows cols env robot | x /= -1 =  (True, newEnv)
                              | otherwise = (False, env)
                     where
-                        (coord, distance) = bfsForDirt rows cols robot env 
+                        (coord, distance) = getNextStepToObjective rows cols robot "Dirt" ["Robot", "Obstacle"] env 
                         (x, y) = coord
                         newEnv = reallocateRobot robot x y env 
 
@@ -118,22 +118,20 @@ isElementVAtXY elementName x y wc (e:rest) babyOrRobot = if row e == x && column
                         else isElementVAtXY elementName x y wc rest babyOrRobot  
 
 --BFS from robot to dirt
---Return the distance from the given robot to the closest dirty tile
---and the next coordinate to visit in orden to reach the dirt
-bfsForDirt ::  Int -> Int -> Element -> [Element] -> ((Int, Int), Int)
-bfsForDirt rows cols robot env = ((nextx, nexty), distance)
+--Return the distance from the given robot to the closest objective tile
+--and the next coordinate to visit in orden to reach the objective
+getNextStepToObjective ::  Int -> Int -> Element -> String -> [String] -> [Element] -> ((Int, Int), Int)
+getNextStepToObjective rows cols robot destName elementsToAvoid env = ((nextx, nexty), distance)
                         where 
                             robotx = row robot
                             roboty = column robot
                             possibleSteps = if wcompany robot then 2 else 1
-                            dtmatrix = matrix rows cols $ \(i, j)-> (-1)--separar esta linea y la de abajo con un metodo propio del bfs
-                            discoverTimes = setElem 0 (robotx, roboty) dtmatrix
-                            (tilesVisited, dirtFound) = bfsForDirtAux [(robotx,roboty, 0)] rows cols env discoverTimes
-                            (dirtx, dirty, distance) = dirtFound
-                            path = if dirtx /= -1 
-                                    then followTraceFromTo dirtx dirty distance robotx roboty tilesVisited
+                            (tilesVisited, objFound) = bfs robotx roboty destName elementsToAvoid rows cols env
+                            (objx, objy, distance) = objFound
+                            path = if objx /= -1 
+                                    then followTraceFromTo objx objy distance robotx roboty tilesVisited
                                     else [(-1,-1)]
-                            (nextx, nexty) = if dirtx /= -1
+                            (nextx, nexty) = if objx /= -1
                                                 then chooseNextTile path possibleSteps
                                                 else (-1,-1)
 
@@ -142,15 +140,22 @@ chooseNextTile :: [(Int, Int)] -> Int -> (Int, Int)
 chooseNextTile path possibleSteps | possibleSteps >=2 && length path > possibleSteps = path !! possibleSteps
                                   | otherwise = path !! 1
 
---BFS from a source x,y to closest dirt. 
+--Perform a bfs from source to closest kind of element (with destName)
+bfs :: Int -> Int -> String -> [String] -> Int -> Int -> [Element] -> (Matrix Int, (Int, Int, Int))
+bfs sourceX sourceY destName elementsToAvoid rows cols env = bfsAuxiliar [(sourceX, sourceY, 0)] destName elementsToAvoid rows cols env discoverTimes
+    where
+        dtmatrix = matrix rows cols $ \(i, j)-> (-1)
+        discoverTimes = setElem 0 (sourceX, sourceY) dtmatrix                            
+
+--BFS from a source x,y to closest kind of element. 
 --Returns a tuple with: a matrix with the visited positions and their descovering times
---and a tuple with the dirt discovered and its discover time
-bfsForDirtAux :: [(Int, Int, Int)] -> Int -> Int -> [Element] -> Matrix Int -> (Matrix Int, (Int, Int, Int))
-bfsForDirtAux [] rows cols env discoverTimes = (discoverTimes, (-1, -1, -1))--Not found
-bfsForDirtAux ((x, y, z):rest) rows cols env discoverTimes | isDirt x y env = (discoverTimes, (x, y, z))--objective found
-                                | otherwise  = bfsForDirtAux tilesToAnalize rows cols env newDiscoverTimes
+--and a tuple with the objective discovered and its discover time
+bfsAuxiliar :: [(Int, Int, Int)] -> String -> [String] -> Int -> Int -> [Element] -> Matrix Int -> (Matrix Int, (Int, Int, Int))
+bfsAuxiliar [] destName elementsToAvoid rows cols env discoverTimes = (discoverTimes, (-1, -1, -1))--Not found
+bfsAuxiliar ((x, y, z):rest) destName elementsToAvoid rows cols env discoverTimes | isThisKindOfElement destName x y env = (discoverTimes, (x, y, z))--objective found
+                                | otherwise  = bfsAuxiliar tilesToAnalize destName elementsToAvoid rows cols env newDiscoverTimes
                                     where
-                                        freeAdys = getFreeAdyacents x y rows cols env discoverTimes (z+1) 4
+                                        freeAdys = getFreeAdyacents x y elementsToAvoid rows cols env discoverTimes (z+1) 4
                                         newDiscoverTimes = setDiscoverTimes freeAdys discoverTimes
                                         tilesToAnalize = rest ++ freeAdys
 
@@ -161,37 +166,43 @@ setDiscoverTimes ((x, y, dt):rest) discoverTimes = setDiscoverTimes rest newDisc
                                                         where
                                                             newDiscoverTimes = setElem dt (x, y) discoverTimes
 
---Check wether a Dirty tile is present in x, y
-isDirt :: Int -> Int -> [Element] -> Bool
-isDirt x y [] = False
-isDirt x y (e:rest) = if row e == x && column e == y && ((show $ toConstr (e)) == "Dirt")
+--Check wether a X tile is present at some coordinates x, y
+isThisKindOfElement :: String -> Int -> Int -> [Element] -> Bool
+isThisKindOfElement destName x y [] = False
+isThisKindOfElement destName x y (e:rest) = if row e == x && column e == y && ((show $ toConstr (e)) == destName)
                         then True
-                        else isDirt x y rest  
+                        else isThisKindOfElement destName x y rest  
 
 --No se puede pasar por encima de obstaculos 
 
 --Returns adyacents of x, y that are no occupied by obstacles =/= any other element
-getFreeAdyacents :: Int -> Int -> Int -> Int -> [Element] -> Matrix Int -> Int -> Int -> [ (Int, Int, Int)]
-getFreeAdyacents x y rows cols env visitedMatrix distance 0 = []
-getFreeAdyacents x y rows cols env visitedMatrix distance n = adyacent ++ getFreeAdyacents x y rows cols env visitedMatrix distance (n-1)
+getFreeAdyacents :: Int -> Int -> [String] -> Int -> Int -> [Element] -> Matrix Int -> Int -> Int -> [ (Int, Int, Int)]
+getFreeAdyacents x y elementsToAvoid rows cols env visitedMatrix distance 0 = []
+getFreeAdyacents x y elementsToAvoid rows cols env visitedMatrix distance n = adyacent ++ getFreeAdyacents x y elementsToAvoid rows cols env visitedMatrix distance (n-1)
                     where
                         (xdir, ydir) = getDirection n
-                        (nextx, nexty) = nextPos x y xdir ydir rows cols env-- /= -1 is an available position
+                        (nextx, nexty) = nextPos x y xdir ydir elementsToAvoid rows cols env-- /= -1 is an available position
                         adyacent = if nextx /= -1 && ((visitedMatrix ! (nextx, nexty)) == -1 ) --it has not been visited yet
                                     then 
                                         [(nextx, nexty, distance)]
                                     else []
 
---Returns is the tile is not occupied by a robot or obstacle
-freeOfRobotObst :: Int -> Int -> [Element] -> Bool--VALORAR COMO HACER PARA EVITAR LOS NINNOS TAMBIEN SI SE TIENE UNO CARGADO
-freeOfRobotObst x y [] = True 
-freeOfRobotObst x y (e:rest) = if row e == x && column e == y && (((show $ toConstr (e)) == "Robot")|| ((show $ toConstr (e)) == "Obstacle"))
+--Returns wether and element belong to the list or not
+elementInList :: Element -> [String] -> Bool
+elementInList element [] = False
+elementInList element (eName:rest) | (show $ toConstr (element)) == eName = True
+                                   | otherwise = elementInList element rest
+
+--Returns is the tile is not occupied by an element of the given list
+freeOf :: Int -> Int -> [String] -> [Element] -> Bool--VALORAR COMO HACER PARA EVITAR LOS NINNOS TAMBIEN SI SE TIENE UNO CARGADO
+freeOf x y elementsToAvoid [] = True 
+freeOf x y elementsToAvoid (e:rest) = if row e == x && column e == y && (elementInList e elementsToAvoid)
                         then False
-                        else freeOfRobotObst x y rest  
+                        else freeOf x y elementsToAvoid rest  
 
 --Returns the coordinates resulting of following a given direction from a certain point 
-nextPos :: Int -> Int -> Int -> Int -> Int -> Int -> [Element] -> (Int, Int)
-nextPos x y xdir ydir rows cols env | withinBounds nextx nexty rows cols && freeOfRobotObst nextx nexty env = (nextx, nexty) 
+nextPos :: Int -> Int -> Int -> Int  -> [String] -> Int -> Int -> [Element] -> (Int, Int)
+nextPos x y xdir ydir elementsToAvoid rows cols env | withinBounds nextx nexty rows cols && freeOf nextx nexty elementsToAvoid env = (nextx, nexty) 
                                | otherwise = (-1, -1)
                                   where 
                                       nextx = x + xdir
