@@ -7,19 +7,36 @@ import Agents
 -- import Data.Data
 import Data.Matrix
 
--- myMethod :: [Int] -> Int
--- myMethod (e:rest) = e
-
 main :: IO ()
 main = do
-  let rows = 5
-  let cols = 5
+  
+
+  let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
+  let newEnv = reallocateRobot (Robot 1 1 True) 2 2 env
+  print newEnv
+
+  -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
+  -- let newEnv = reallocateElementFromTo "Obstacle" 3 2 False 3 1 env False
+  -- print newEnv
+
+  -- let isAt = isElementVAtXY "Obstacle" 3 2 False env False
+  -- print isAt
+  
+  -- let newEl = createElement "Obstacle" 0 0 False
+  -- print newEl
+  
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
+  -- let (nextStep, dist ) = bfsForDirt rows cols (Robot 1 1 False) env
+  -- print(nextStep)
+  -- print(dist)
+
   -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 3, Dirt 3 2]
   -- let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 3]
-  let env = [Baby 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
-  let initialMatrix = matrix rows cols $ \(i, j)-> (-1)
-  let myMatrix = setElem 0 (1, 1) initialMatrix
-  print( myMatrix)
+  -- let initialMatrix = matrix rows cols $ \(i, j)-> (-1)
+  -- let myMatrix = setElem 0 (1, 1) initialMatrix
+  -- print( myMatrix)
 
   -- print(nrows myMatrix)
   -- print(ncols myMatrix)
@@ -31,17 +48,18 @@ main = do
   -- let  np = nextPos 1 1 xdir ydir rows cols env
   -- print( np)
 
-  let (bfsMatrix, destination) = bfsForDirtAux [(1,1,0)] rows cols env myMatrix
-  print bfsMatrix
-  print destination
-  let (dirtx, dirty, distance) = destination
-  let path = followTraceFromTo dirtx dirty distance 1 1 bfsMatrix-----------------------------------------------
-  print(path)
-  let nextTile = chooseNextTile path 2
-  print nextTile
-  let (nextStep, dist ) = bfsForDirt rows cols (Robot 1 1 True) env
-  print(nextStep)
-  print(dist)
+  -- let (bfsMatrix, destination) = bfsForDirtAux [(1,1,0)] rows cols env myMatrix
+  -- print bfsMatrix
+  -- print destination
+  -- let (dirtx, dirty, distance) = destination
+  -- let path = followTraceFromTo dirtx dirty distance 1 1 bfsMatrix-----------------------------------------------
+  -- print(path)
+  -- let nextTile = chooseNextTile path 2
+  -- print nextTile
+  -- let (nextStep, dist ) = bfsForDirt rows cols (Robot 1 1 False) env
+  -- print(nextStep)
+  -- print(dist)
+
 -- let (nextx, nexty)
   -- print( myMethod [2])
 

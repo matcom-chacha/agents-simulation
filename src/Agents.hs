@@ -16,16 +16,27 @@ import Data.Matrix
 --Puede dejar a un bebe en cualquier casilla(libre o con un corral vacio), se mantienen ahi ambos por ese turno
 --Al llegar a una casilla con suciedad elige si limpiar o moverse en el proximo turno
 
--- --SI EL BEBE CARGA UN ROBOT MOVERLO A EL TAMBIEN
--- moveR2B2 :: [Element] -> Element -> [Element]
--- moveR2B2 env robot | uponDirt env robot = cleanDirt env robot
---                   | wChild && length (freeBabies) == 0 = findDirt env robot
---                   | wChild && length (freeBabies) > 0 = findPlaypen env robot
---                   | not wChild = stimateBestAnswer env robot -- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
+--QUE EL METODO SEA UN OR DONDE SE EJECUTE UNA DE LAS POSIBLES ACCIONES QUE PUEDE HACER EL ROBOT
+
+--COMO NO SE COMPRUEBA LA CASILLA ACTUAL VERIFICAR APARTE COSAS COMO SI EN LA CASILLA ACTUAL HAY UN BEBE Y NO LO TENGO CARGADO CARGARLO (AUNQUE ESTE CASO ESPECIFICAMENTE NO DEBE OCURRIR PUESTO QUE AL LLEHGAR A UNA CASILLA CON BEBE ESTE SE CARGA)
+
+-- AL LLEGAR A UNA CASILLA CON BEBE ESTE SE CARGA MANEJAR ESTO CUANDO SE CAMINE
+
+-- --SI NO SE PUEDE REALIZAR UNA ACCION IR A LA OTRA
+-- moveR2B2 :: [Element] -> Element -> (Bool, [Element])
+-- moveR2B2 env robot | uponDirt env robot && result1 = (result1, env1)
+--                   | wChild && length (freeBabies) == 0 && result2 = (result2, env2)
+--                   | wChild && length (freeBabies) > 0 && result3 = (result3, env3)
+--                   | not wChild && result4= (result4, env4)-- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
 --                 --   | otherwise = False
 --                   where
 --                       wChild = wcompany robot
 --                       freeBabies = takeBabies env env
+--                       (result1, env1) = cleanDirt env robot
+--                       (result2, env2) = findDirt env robot
+--                       (result3, env3) = findPlaypen env robot
+--                       (result4, env4) = stimateBestAnswer env robot 
+
 
 --return wether a given robot is positioned over a dirty tile or not
 uponDirt :: [Element] -> Element -> Bool 
@@ -35,8 +46,10 @@ uponDirt (Dirt x y : rest) robot | x == row robot && y == column robot = True
 uponDirt (e: rest) robot = uponDirt rest robot
 
 --Remove dirt in a tile with the robot coordinates
-cleanDirt :: [Element] -> Element -> [Element]
-cleanDirt env robot = removeDirtAt (row robot) (column robot) env
+cleanDirt :: [Element] -> Element -> (Bool, [Element])
+cleanDirt env robot = (True, newEnv)--CAMBIAR AL METODO GENERAL
+                    where
+                        newEnv = removeDirtAt (row robot) (column robot) env
 
 --REVISADO
 --remove a given element form the environment SI FUNCIONA EL TOCONST LLEVAR ESTO A UN METODO GENERICO
@@ -46,35 +59,67 @@ removeDirtAt x y (e:rest) = if row e == x && column e == y && ((show $ toConstr 
                                 then rest
                                 else [e] ++ removeDirtAt x y rest  
 
---Para el bfs tener en cuenta que:
---Se debe ir llevando una lista con las posiciones libre encontradas y el numero con el que fueron descubiertas
---Parar cuando se encuentre el objetivo y asegurar ponerle numero
---Para encontrar el camino de regreso ir virando y pidiendo de los adyacentes en la lista de vistos uno
---la ctdad anterior (o menor) de encontrado
---tomar el ultimo de esta lista antes de encontrar a la fuente que seria 0, y aqui seria el proximo paso
+-- CONSIDERAR CUANDO SE TIENE UN BEBE ENCIMA O HAY OTRO EN LA MISMA CASILLA
 
--- --Stimate distance to closest dirt and move towards it
--- findDirt :: Int -> Int -> [Element] -> Element -> [Element]
--- findDirt rows cols env robot = finalEnv
---                     where
---                         ( coord, distance) = bfsForDirt rows cols robot env 
---                         x, y = coord
---                         newEnv = removeRobot robot env
---                         newEnv = addRobot x y env 
+--Stimate distance to closest dirt and move towards it
+--Returns a tuple with a boolean indicating if the robot could find the objective and the environment (modified accordingly if the move was ejected)
+findDirt :: Int -> Int -> [Element] -> Element -> (Bool, [Element])
+findDirt rows cols env robot | x /= -1 =  (True, newEnv)
+                             | otherwise = (False, env)
+                    where
+                        (coord, distance) = bfsForDirt rows cols robot env 
+                        (x, y) = coord
+                        newEnv = reallocateRobot robot x y env 
 
--- --Add robot to a given position in the env
--- addRobot x y env 
+--Reallocate robot (and baby in case of carriying one) to another position
+reallocateRobot :: Element -> Int -> Int -> [Element] -> [Element]
+reallocateRobot robot newX newY env | newX == -1 = env
+                                    | otherwise = finalEnv
+                            where
+                                robotX = row robot
+                                robotY = column robot
+                                robotWBaby = wcompany robot
+                                babyEnv = if robotWBaby
+                                    then reallocateElementFromTo "Baby" robotX robotY True newX newY env True
+                                    else env
+                                -- newEnv = removeRobot robot env
+                                -- robotEnv = addRobot x y (wcompany robot) env
+                                finalEnv = reallocateElementFromTo "Robot" robotX robotY robotWBaby newX newY babyEnv True 
 
--- --Remove robot from a given position in the env
--- removeRobot robot env
+--Reallocate a specific element from a given postion to another --ELIMINAR REALLOCATEOBSTACLE y BABY
+reallocateElementFromTo:: String -> Int -> Int -> Bool -> Int -> Int -> [Element] -> Bool -> [Element]
+reallocateElementFromTo elementName sourceX sourceY wcompany destX destY env babyOrRobot = finalEnv
+                    where
+                        newEnv = removeElementFrom elementName sourceX sourceY wcompany env babyOrRobot
+                        newElement = createElement elementName destX destY wcompany
+                        finalEnv = newEnv ++ newElement
+
+--Remove a specific element in a given position
+removeElementFrom :: String -> Int -> Int -> Bool -> [Element] -> Bool -> [Element]
+removeElementFrom elementName x y wc [] babyOrRobot = []
+removeElementFrom elementName x y wc (e:rest) babyOrRobot = if row e == x && column e == y && ((show $ toConstr (e)) == elementName) && ((not babyOrRobot) || wcompany e == wc)
+                                then rest
+                                else [e] ++ removeElementFrom elementName x y wc rest babyOrRobot  
+
+--Return an element with specific characteristics
+createElement :: String -> Int -> Int -> Bool -> [Element]
+createElement elementName sourceX sourceY wcompany = case elementName of "Baby" -> [Baby sourceX sourceY wcompany]
+                                                                         "Robot" -> [Robot sourceX sourceY wcompany]
+                                                                         "Obstacle" -> [Obstacle sourceX sourceY]
+                                                                         "Dirt" -> [Dirt sourceX sourceY]
+                                                                         "Playpen" -> [Playpen sourceX sourceY]
+
+-- NOT USED YET
+--Check wether a given element is in the environment (in a specific position) or not 
+isElementVAtXY :: String -> Int -> Int -> Bool -> [Element] -> Bool -> Bool
+isElementVAtXY elementName x y wc [] babyOrRobot = False
+isElementVAtXY elementName x y wc (e:rest) babyOrRobot = if row e == x && column e == y && ((show $ toConstr (e)) == elementName) && ((not babyOrRobot) || wcompany e == wc)
+                        then True
+                        else isElementVAtXY elementName x y wc rest babyOrRobot  
 
 --BFS from robot to dirt
---return the distance from the given robot to the closest dirty tile
---and the next coordinates to visit in orden to reach the dirt
-
--- LLEVAR CUANDO ESTAS ACCIONES SE PUEDEN REALIZAR O NO, POR EJEMPLO PUEDE NO HABER BEBES O NO HABER SUCIEDAD
-
---ANNADIR ROWS COLS MOVER PARA EL METODO DE ARRIBA
+--Return the distance from the given robot to the closest dirty tile
+--and the next coordinate to visit in orden to reach the dirt
 bfsForDirt ::  Int -> Int -> Element -> [Element] -> ((Int, Int), Int)
 bfsForDirt rows cols robot env = ((nextx, nexty), distance)
                         where 
@@ -85,40 +130,36 @@ bfsForDirt rows cols robot env = ((nextx, nexty), distance)
                             discoverTimes = setElem 0 (robotx, roboty) dtmatrix
                             (tilesVisited, dirtFound) = bfsForDirtAux [(robotx,roboty, 0)] rows cols env discoverTimes
                             (dirtx, dirty, distance) = dirtFound
-                            path = followTraceFromTo dirtx dirty distance robotx roboty tilesVisited
-                            (nextx, nexty) = chooseNextTile path possibleSteps
+                            path = if dirtx /= -1 
+                                    then followTraceFromTo dirtx dirty distance robotx roboty tilesVisited
+                                    else [(-1,-1)]
+                            (nextx, nexty) = if dirtx /= -1
+                                                then chooseNextTile path possibleSteps
+                                                else (-1,-1)
 
-
---Chequear que indexar en listas empiece en 0, sino cambiar a un paso mas la indexacion abajo
+--Return the next tile to visit in a given path when a certain amount of steps can be taken by the robot
 chooseNextTile :: [(Int, Int)] -> Int -> (Int, Int)
 chooseNextTile path possibleSteps | possibleSteps >=2 && length path > possibleSteps = path !! possibleSteps
-                                  | possibleSteps == 1 && length path > 1 = path !! 1
-                                  | otherwise = (-1,-1)
+                                  | otherwise = path !! 1
 
---PARA ENCONTRAR LA SIGUIENTE CASILLA COLOCAR TENER EN CUENTA HASTA CUANTOS PASOS PUEDE DAR EL ROBOT Y LA DISTANCIA A LA UQE ESTA EL OBJETIVO
--- osea, aunque el robot pueda dar dos pasos is el objetivo mas cerca esta a tan solo uno se camina un paso
-
---bfs from a source x,y to closest dirt. 
+--BFS from a source x,y to closest dirt. 
 --Returns a tuple with: a matrix with the visited positions and their descovering times
---and a tuple with the dirt discovered
+--and a tuple with the dirt discovered and its discover time
 bfsForDirtAux :: [(Int, Int, Int)] -> Int -> Int -> [Element] -> Matrix Int -> (Matrix Int, (Int, Int, Int))
 bfsForDirtAux [] rows cols env discoverTimes = (discoverTimes, (-1, -1, -1))--Not found
 bfsForDirtAux ((x, y, z):rest) rows cols env discoverTimes | isDirt x y env = (discoverTimes, (x, y, z))--objective found
                                 | otherwise  = bfsForDirtAux tilesToAnalize rows cols env newDiscoverTimes
                                     where
-                                        -- newDiscoveredTimes = setElem z (x,y) discoveredTimes--SETEAR ESTO APENAS SE ENCUENTRA
                                         freeAdys = getFreeAdyacents x y rows cols env discoverTimes (z+1) 4
-                                        newDiscoverTimes = setDiscoverTimes freeAdys discoverTimes--SETEAR ESTO APENAS SE ENCUENTRA
+                                        newDiscoverTimes = setDiscoverTimes freeAdys discoverTimes
                                         tilesToAnalize = rest ++ freeAdys
 
-
+--Fill the matrix with the discover times of the elements in the list
 setDiscoverTimes :: [(Int, Int, Int)] -> Matrix Int -> Matrix Int
 setDiscoverTimes [] discoverTimes = discoverTimes 
 setDiscoverTimes ((x, y, dt):rest) discoverTimes = setDiscoverTimes rest newDiscoverTimes
                                                         where
                                                             newDiscoverTimes = setElem dt (x, y) discoverTimes
-
---Por cada uno de sus adyacentes verificar que no sea dirt o que este libre
 
 --Check wether a Dirty tile is present in x, y
 isDirt :: Int -> Int -> [Element] -> Bool
@@ -142,12 +183,13 @@ getFreeAdyacents x y rows cols env visitedMatrix distance n = adyacent ++ getFre
                                     else []
 
 --Returns is the tile is not occupied by a robot or obstacle
-freeOfRobotObst :: Int -> Int -> [Element] -> Bool
+freeOfRobotObst :: Int -> Int -> [Element] -> Bool--VALORAR COMO HACER PARA EVITAR LOS NINNOS TAMBIEN SI SE TIENE UNO CARGADO
 freeOfRobotObst x y [] = True 
 freeOfRobotObst x y (e:rest) = if row e == x && column e == y && (((show $ toConstr (e)) == "Robot")|| ((show $ toConstr (e)) == "Obstacle"))
                         then False
                         else freeOfRobotObst x y rest  
 
+--Returns the coordinates resulting of following a given direction from a certain point 
 nextPos :: Int -> Int -> Int -> Int -> Int -> Int -> [Element] -> (Int, Int)
 nextPos x y xdir ydir rows cols env | withinBounds nextx nexty rows cols && freeOfRobotObst nextx nexty env = (nextx, nexty) 
                                | otherwise = (-1, -1)
@@ -155,9 +197,7 @@ nextPos x y xdir ydir rows cols env | withinBounds nextx nexty rows cols && free
                                       nextx = x + xdir
                                       nexty = y + ydir
 
--- --Follow the path from source to destination in a list returned by a bfs
--- --distanceRequired tell how many steps away from the destination are required
--- followTraceFromTo dirtx dirty distance robotx roboty distanceRequired tilesVisited
+--Follow the path from source to destination in a list returned by a bfs
 followTraceFromTo :: Int -> Int -> Int -> Int -> Int -> Matrix Int -> [(Int, Int)]--It is assumed that a path exist
 followTraceFromTo currentX currentY 0 destX destY visitMatrix | currentX == destX && currentY == destY = [(currentX, currentY)]
                                                               | otherwise = [(-1,-1)]
@@ -166,7 +206,7 @@ followTraceFromTo currentX currentY distance destX destY visitMatrix | nextx /= 
                             where
                                 (nextx, nexty) = previousTileInPath currentX currentY (distance-1) visitMatrix
 
---Find which adjacent has the distance
+--Find which adjacent was discovered has the distance
 previousTileInPath :: Int -> Int -> Int -> Matrix Int -> (Int, Int)
 previousTileInPath currentX currentY distance visitMatrix = previousTileInPathInDir currentX currentY distance visitMatrix 4
 
@@ -182,9 +222,13 @@ previousTileInPathInDir currentX currentY distance visitMatrix n
             indexX = currentX + xDir
             indexY = currentY + yDir
 
--- --move robot towards closest playpen EN ESTOS CASOS PASAR LA MAYOR CTDAD DE PASOS QUE PUEDE DAR EL ROBOT
--- findPlaypen :: [Element] -> Element -> [Element]
+--Move robot towards closest playpen so he can leave a baby EN ESTOS CASOS PASAR LA MAYOR CTDAD DE PASOS QUE PUEDE DAR EL ROBOT
+-- findPlaypen :: [Element] -> Element -> (Bool, [Element])
 -- findPlaypen env robot-- Aqui bajar al ninno si estas en el corral
+
+-- PARA AJUSTAR EL BFS A ESTE CAMBIAR EL ISDIRT POR UN METODO QUE PREGUNTE SI EL OBJETIVO ES EL QUE SE PASA (CON UN STRING)
+-- Y CAMBIAR EL METODO ROBOTOROBSTACLE POR UNO QUE RECIBA UN ARRARY DE STRINGS OCN LOS ELEMENTOS QUE NO PUEDE TOPARSE y
+-- QUE SE AUXILIE EN UN NUEVO METODO PARA PREGUNTAR SI EL ADY ES UNO DE ESOS
 
 -- --Find closest activity to do between chase babies or dirt
 -- stimateBestAnswer --Usar findBaby pero devolviendo este un camino y segun la distancia proseguir
