@@ -11,12 +11,47 @@ main :: IO ()
 main = do
   let rows = 5
   let cols = 5
-  let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
+  let env = [Robot 1 1 False, Baby 1 2 False, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
+  -- let env = [Robot 1 1 True, Baby 1 1 True, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
 
-  let (result, newEnv) = findDirt rows cols env (Robot 1 1 True)
+  -- let newEnv = reallocateElementFromTo "Baby" 1 2 False 1 2 True env True
+  let (result, newEnv) = stimateBestAnswer rows cols env (Robot 1 1 False) 
+  print(result)
+  print(newEnv)
 
-  print result
-  print newEnv
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
+
+
+  -- let (result, newEnv) = findPlaypen rows cols env (Robot 1 1 True)
+
+  -- print result
+  -- print newEnv
+
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3, Playpen 4 4]--no entra al centro de la matriz
+
+  -- let initialMatrix = matrix rows cols $ \(i, j)-> (-1)
+  -- let myMatrix = setElem 0 (1, 1) initialMatrix
+  -- print( myMatrix)
+  -- let (bfsMatrix, destination) = bfsAuxiliar [(1,1,0)] "Playpen" ["Robot", "Obstacle", "Baby"] rows cols env myMatrix
+  -- print bfsMatrix
+  -- print destination
+  -- let (dirtx, dirty, distance) = destination
+  -- let path = followTraceFromTo dirtx dirty distance 1 1 bfsMatrix-----------------------------------------------
+  -- print(path)
+
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
+
+  -- let (result, newEnv) = findDirt rows cols env (Robot 1 1 True)
+
+  -- print result
+  -- print newEnv
+
   -- let env = [Baby 1 1 True, Robot 1 1 True, Baby 1 2 False, Obstacle 3 2, Dirt 3 3]--no entra al centro de la matriz
   -- let newEnv = reallocateRobot (Robot 1 1 True) 2 2 env
   -- print newEnv

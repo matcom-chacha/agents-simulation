@@ -72,26 +72,34 @@ findDirt rows cols env robot | x /= -1 =  (True, newEnv)
                         newEnv = reallocateRobot robot x y env 
 
 --Reallocate robot (and baby in case of carriying one) to another position
+--If the destination has a baby in it arrangements are made so the robot can take it
 reallocateRobot :: Element -> Int -> Int -> [Element] -> [Element]
 reallocateRobot robot newX newY env | newX == -1 = env
                                     | otherwise = finalEnv
                             where
                                 robotX = row robot
                                 robotY = column robot
-                                robotWBaby = wcompany robot
+                                robotCarriesBaby = wcompany robot
+                                robotWillTakeBaby = isElementVAtXY "Baby" newX newY False env True
+                                robotWBaby = robotCarriesBaby || robotWillTakeBaby
                                 babyEnv = if robotWBaby
-                                    then reallocateElementFromTo "Baby" robotX robotY True newX newY env True
-                                    else env
+                                    then reallocateElementFromTo "Baby" robotX robotY True newX newY True env True
+                                    else 
+                                        if robotWillTakeBaby
+                                            then reallocateElementFromTo "Baby" newX newY False newX newY True env True
+                                            -- then reallocateElementFromTo "Baby" newX newY False newX newY True env True
+                                        else 
+                                            env
                                 -- newEnv = removeRobot robot env
                                 -- robotEnv = addRobot x y (wcompany robot) env
-                                finalEnv = reallocateElementFromTo "Robot" robotX robotY robotWBaby newX newY babyEnv True 
+                                finalEnv = reallocateElementFromTo "Robot" robotX robotY robotCarriesBaby newX newY robotWBaby babyEnv True 
 
 --Reallocate a specific element from a given postion to another --ELIMINAR REALLOCATEOBSTACLE y BABY
-reallocateElementFromTo:: String -> Int -> Int -> Bool -> Int -> Int -> [Element] -> Bool -> [Element]
-reallocateElementFromTo elementName sourceX sourceY wcompany destX destY env babyOrRobot = finalEnv
+reallocateElementFromTo:: String -> Int -> Int -> Bool -> Int -> Int -> Bool -> [Element] -> Bool -> [Element]
+reallocateElementFromTo elementName sourceX sourceY wcompany destX destY nwcompany env babyOrRobot = finalEnv
                     where
                         newEnv = removeElementFrom elementName sourceX sourceY wcompany env babyOrRobot
-                        newElement = createElement elementName destX destY wcompany
+                        newElement = createElement elementName destX destY nwcompany
                         finalEnv = newEnv ++ newElement
 
 --Remove a specific element in a given position
@@ -152,7 +160,7 @@ bfs sourceX sourceY destName elementsToAvoid rows cols env = bfsAuxiliar [(sourc
 --and a tuple with the objective discovered and its discover time
 bfsAuxiliar :: [(Int, Int, Int)] -> String -> [String] -> Int -> Int -> [Element] -> Matrix Int -> (Matrix Int, (Int, Int, Int))
 bfsAuxiliar [] destName elementsToAvoid rows cols env discoverTimes = (discoverTimes, (-1, -1, -1))--Not found
-bfsAuxiliar ((x, y, z):rest) destName elementsToAvoid rows cols env discoverTimes | isThisKindOfElement destName x y env = (discoverTimes, (x, y, z))--objective found
+bfsAuxiliar ((x, y, z):rest) destName elementsToAvoid rows cols env discoverTimes | isThisKindOfElement destName x y env env = (discoverTimes, (x, y, z))--objective found
                                 | otherwise  = bfsAuxiliar tilesToAnalize destName elementsToAvoid rows cols env newDiscoverTimes
                                     where
                                         freeAdys = getFreeAdyacents x y elementsToAvoid rows cols env discoverTimes (z+1) 4
@@ -166,14 +174,16 @@ setDiscoverTimes ((x, y, dt):rest) discoverTimes = setDiscoverTimes rest newDisc
                                                         where
                                                             newDiscoverTimes = setElem dt (x, y) discoverTimes
 
---Check wether a X tile is present at some coordinates x, y
-isThisKindOfElement :: String -> Int -> Int -> [Element] -> Bool
-isThisKindOfElement destName x y [] = False
-isThisKindOfElement destName x y (e:rest) = if row e == x && column e == y && ((show $ toConstr (e)) == destName)
-                        then True
-                        else isThisKindOfElement destName x y rest  
-
---No se puede pasar por encima de obstaculos 
+--Check wether a X tile is present at some coordinates x, y (For babies it is assumed that babies with robots or o playpen are not obejectives)
+isThisKindOfElement :: String -> Int -> Int -> [Element] -> [Element] -> Bool
+isThisKindOfElement destName x y [] env = False
+isThisKindOfElement destName x y (e:rest) env 
+    | row e == x && column e == y && elementType == destName 
+        && (elementType /= "Baby" || ( not (wcompany e) && not (isElementVAtXY "Playpen" x y False env False) )) 
+            = True
+    | otherwise = isThisKindOfElement destName x y rest env
+        where
+            elementType = show $ toConstr (e)
 
 --Returns adyacents of x, y that are no occupied by obstacles =/= any other element
 getFreeAdyacents :: Int -> Int -> [String] -> Int -> Int -> [Element] -> Matrix Int -> Int -> Int -> [ (Int, Int, Int)]
@@ -233,22 +243,48 @@ previousTileInPathInDir currentX currentY distance visitMatrix n
             indexX = currentX + xDir
             indexY = currentY + yDir
 
---Move robot towards closest playpen so he can leave a baby EN ESTOS CASOS PASAR LA MAYOR CTDAD DE PASOS QUE PUEDE DAR EL ROBOT
--- findPlaypen :: [Element] -> Element -> (Bool, [Element])
--- findPlaypen env robot-- Aqui bajar al ninno si estas en el corral
+--Move robot towards closest playpen so he can leave a baby
+findPlaypen :: Int -> Int -> [Element] -> Element -> (Bool, [Element])-- Put baby down if playpen was reached
+findPlaypen rows cols env robot | isElementVAtXY "Playpen" sourceX sourceY False env False = putBabyDown sourceX sourceY env
+                                | x /= -1 =  (True, newEnv)
+                                | otherwise = (False, env)
+                    where
+                        sourceX = row robot
+                        sourceY = column robot
+                        (coord, distance) = getNextStepToObjective rows cols robot "Playpen" ["Robot", "Obstacle", "Baby"] env 
+                        (x, y) = coord
+                        newEnv = reallocateRobot robot x y env 
 
--- PARA AJUSTAR EL BFS A ESTE CAMBIAR EL ISDIRT POR UN METODO QUE PREGUNTE SI EL OBJETIVO ES EL QUE SE PASA (CON UN STRING)
--- Y CAMBIAR EL METODO ROBOTOROBSTACLE POR UNO QUE RECIBA UN ARRARY DE STRINGS OCN LOS ELEMENTOS QUE NO PUEDE TOPARSE y
--- QUE SE AUXILIE EN UN NUEVO METODO PARA PREGUNTAR SI EL ADY ES UNO DE ESOS
+--Modify the env as the robot leaves a baby in a given position
+putBabyDown :: Int -> Int -> [Element] -> (Bool, [Element])
+putBabyDown x y env = (True, finalEnv)
+        where
+            newEnv1 = removeElementFrom "Baby" x y True env True
+            newEnv2 = removeElementFrom "Robot" x y True env True
+            baby = Baby x y False
+            robot = Robot x y False
+            finalEnv = newEnv2 ++ [baby] ++ [robot]
 
--- --Find closest activity to do between chase babies or dirt
--- stimateBestAnswer --Usar findBaby pero devolviendo este un camino y segun la distancia proseguir
--- --HAcer un etodo auxiliar para devolver el camino al bebe y otro a la cuna que utilicen todos los metodos
-
--- --move robot towards closest baby EN ESTOS CASOS PASAR LA MAYOR CTDAD DE PASOS QUE PUEDE DAR EL ROBOT
--- findBaby :: [Element] -> Element -> [Element] --TENER EN CUENTA QUE EL BEBE NO ESTE EN LA CUNA NI CARGADADO POR OTRO ROBOT
--- findBaby env robot
-
+--Find closest activity to do between chase babies or dirt
+stimateBestAnswer:: Int -> Int -> [Element] -> Element -> (Bool, [Element])
+stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)--para que pase lo de abajo revisar el orden en que re realiza la comprobacion
+                                      | otherwise = (False, env)
+    where--aqui se le estaria pasando por arriba a los bebes en cunas (a los cargados en teoria no pq se evitan por el robot)
+        (bCoord, bDistance) = getNextStepToObjective rows cols robot "Baby" ["Robot", "Obstacle"] env 
+        (dCoord, dDistance) = getNextStepToObjective rows cols robot "Dirt" ["Robot", "Obstacle"] env 
+        (bX,bY) = bCoord--move robot towards closest baby 
+        (dX,dY) = dCoord--move robot towards closest dirt
+        (x,y) = if bX /= -1
+                    then 
+                        if dY /= -1
+                            then 
+                                if bDistance <= dDistance--comparing distances to find closest objective
+                                    then (bX, bY)
+                                    else (dX, dY)
+                            else (bX,bY)
+                    else (dX,dY)--at this point dX, dY can be -1 or not
+        newEnv = reallocateRobot robot x y env
+--TENER EN CUENTA QUE EL BEBE NO ESTE EN LA CUNA NI CARGADADO POR OTRO ROBOT
 
 -- -- --Return a list with the free babies in the given environment (those outisde of playpens and that are not carried by any robot)
 -- -- getFreeBabies :: [Element] -> [Element] same as takeBabies
