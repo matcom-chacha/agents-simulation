@@ -115,6 +115,7 @@ createDirt rows cols oldEnv newEnv = finalEnv
                                 babies = takeBabies oldEnv oldEnv
                                 finalEnv = createDirtAux rows cols babies babies oldEnv newEnv
 
+--REMOVER EL OLD ENV QUE SE RECIVE AQUI QUE YA NO SE UTILIZA
 --Note que se cuentan en una casilla los bebes no cargados ni en corral
 createDirtAux :: Int -> Int -> [Element]-> [Element] -> [Element] -> [Element] -> [Element]
 createDirtAux rows cols [] babies oldEnv newEnv = newEnv 
@@ -177,8 +178,6 @@ getCorrespondingDirt partners | partners == 1 = myRandom 0 1
 
 --Allocate tiles with dirt in env picking one of the available positions of a given grid
 allocateNewDirt :: Int -> [(Int, Int)] -> [Element] -> [Element]
--- allocateNewDirt 0 availablePos env = env
--- allocateNewDirt dirtToGenerate [] env = env
 allocateNewDirt 0 availablePos env = []
 allocateNewDirt dirtToGenerate [] env = []
 allocateNewDirt dirtToGenerate availablePos env = newDirt ++ allocateNewDirt (dirtToGenerate - 1) newAvailablePos env

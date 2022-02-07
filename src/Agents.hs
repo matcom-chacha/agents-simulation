@@ -7,15 +7,39 @@ import EnvChanges
 import Data.Data
 import Data.Matrix
 
+
+--Try to move every robot in simulation
+moveRobots :: Int -> Int -> [Element] -> Int -> (Bool, [Element])
+moveRobots rows cols env robotTypes = moveRobotsAux rows cols env robots robotTypes False
+                                            where
+                                                robots = takeRobots env env
+
+--Move every robot according to his type
+moveRobotsAux :: Int -> Int -> [Element] -> [Element] -> Int -> Bool -> (Bool, [Element])--Eliminar de aqui y de abajo el Int devuelto en la tupla si no se necesita mas
+moveRobotsAux rows cols env [] robotType envChanged = (envChanged, env) 
+moveRobotsAux rows cols env (robot:rest) 1 envChanged = moveRobotsAux rows cols newEnv rest 1 nEnvChanged
+                                                where
+                                                    (couldMove, newEnv) = moveR2B2 rows cols env robot 
+                                                    nEnvChanged = couldMove || envChanged                                               
+-- moveRobotsAux rows cols env (robot:rest) 2 = moveRobotsAux rows cols newEnv rest 2
+--                                                 where
+--                                                     newEnv = moveC3PO rows cols env robot 
+
+--Return all robot currently in simulation
+takeRobots :: [Element] -> [Element] -> [Element]
+takeRobots [] env = []  
+takeRobots (Robot x y c:rest) env = [Robot x y c] ++ takeRobots rest env
+takeRobots (e:rest) env = takeRobots rest env
+
 -------------------------------------------------Agent 1------------------------------------------------------------
 
 --SI NO SE PUEDE REALIZAR UNA ACCION IR A LA OTRA
-moveR2B2 :: Int -> Int -> [Element] -> Element -> (Int, Bool, [Element])
-moveR2B2 rows cols env robot | uponDirt env robot && result1 = (1,result1, env1)--CAMBIAR POR EL METODO GENRICO IsElementVAtXY
-                  | wChild && length (freeBabies) == 0 && result2 = (2,result2, env2)
-                  | wChild && length (freeBabies) > 0 && result3 = (3,result3, env3)
-                  | not wChild && result4 = (4, result4, env4)-- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
-                  | otherwise = (5, False, env)
+moveR2B2 :: Int -> Int -> [Element] -> Element -> ( Bool, [Element])
+moveR2B2 rows cols env robot | uponDirt env robot && result1 = (result1, env1)--CAMBIAR POR EL METODO GENRICO IsElementVAtXY
+                  | wChild && length (freeBabies) == 0 && result2 = (result2, env2)
+                  | wChild && length (freeBabies) > 0 && result3 = (result3, env3)
+                  | not wChild && result4 = (result4, env4)-- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
+                  | otherwise = (False, env)
                   where
                       wChild = wcompany robot
                       freeBabies = takeBabies env env

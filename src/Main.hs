@@ -6,9 +6,46 @@ import EnvChanges
 import Agents
 -- import Data.Data
 import Data.Matrix
+import GameFlow
 
 main :: IO ()
 main = do
+  let rows = 5
+  let cols = 5
+  let obsts = 2
+  let robots = 2
+  let babys = 2
+  let dirt = 2
+  let env = [Robot 1 1 False, Baby 1 2 False,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]
+  let robotTypes = 1
+  let randomVariationTime = 4
+  let simTime = 10
+
+  let (initialEnv, finalState, finalEnv ) = startSimulation rows cols obsts robots babys dirt robotTypes randomVariationTime simTime
+  print initialEnv
+  print finalState
+  print finalEnv
+
+  
+  -- let a = mod 4 3
+  -- print a
+  
+  -- let a = (2 * 2 * 40 )/ 100
+  -- print a
+
+  -- let b = (2 * 2 * 40 ) `div` 100
+  -- print b
+
+
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Robot 1 1 False, Baby 1 2 False,  Obstacle 3 2, Dirt 3 3, Playpen 4 4]
+  -- let robotTypes = 1
+
+  -- let (result, newEnv) = moveRobots rows cols env robotTypes
+  -- print result
+  -- print newEnv
+
   -- Testing R2B2
 --   let rows = 5
 --   let cols = 5

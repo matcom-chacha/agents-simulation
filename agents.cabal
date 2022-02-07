@@ -16,6 +16,6 @@ extra-source-files:  README.md
 executable agents
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Random Env EnvChanges Agents
+  other-modules:       Random Env EnvChanges Agents GameFlow
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, random, matrix
