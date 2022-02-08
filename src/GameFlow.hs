@@ -7,11 +7,16 @@ import Data.Data
 import Data.Matrix
 
 
--- -simTime: max time to keep on simulation
-startSimulation :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int-> IO ()
-startSimulation rows cols obsts robots babys dirt robotTypes randomVariationTime simTime = do
+--Start Simulation 
+--An environment can be provided or one can be generated
+--simTime: max time to keep on simulation
+startSimulation :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> [Element] -> Bool -> IO ()
+startSimulation rows cols obsts robots babys dirt robotTypes randomVariationTime simTime board generateBoard = do
         let
-            initialEnv = initializeEnv rows cols obsts robots babys dirt in gameCicle rows cols robotTypes randomVariationTime simTime 0 initialEnv [] [] False 0
+            initialEnv = if generateBoard 
+                then initializeEnv rows cols obsts robots babys dirt 
+                else board
+                in gameCicle rows cols robotTypes randomVariationTime simTime 0 initialEnv [] [] False 0
 
 --Main cicle of the game. Call for environment random changes and for the robots response.
 gameCicle :: Int -> Int -> Int -> Int -> Int-> Int -> [Element] -> [Element] -> [Element] -> Bool -> Int -> IO ()
