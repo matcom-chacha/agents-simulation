@@ -31,10 +31,10 @@ takeRobots (e:rest) env = takeRobots rest env
 -------------------------------------------------Agent 1------------------------------------------------------------
 
 moveR2B2 :: Int -> Int -> [Element] -> Element -> ( Bool, [Element])
-moveR2B2 rows cols env robot | uponDirt env robot && result1 = (result1, env1)--CAMBIAR POR EL METODO GENRICO IsElementVAtXY
+moveR2B2 rows cols env robot | uponDirt env robot && result1 = (result1, env1)
                   | wChild && length (freeBabies) == 0 && result2 = (result2, env2)
                   | wChild && (length (freeBabies) > 0 || length (dirt) == 0 )  && result3 = (result3, env3)
-                  | not wChild && result4 = (result4, env4)-- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
+                  | not wChild && result4 = (result4, env4)
                   | otherwise = (False, env)
                   where
                       wChild = wcompany robot
@@ -46,7 +46,6 @@ moveR2B2 rows cols env robot | uponDirt env robot && result1 = (result1, env1)--
                       (result4, env4) = stimateBestAnswer rows cols env robot 
 
 
--- takeDirt env --Hacer un take x general
 --Return the dirty tiles in the env
 takeDirt :: [Element] -> [Element] -> [Element]
 takeDirt [] env = []  
@@ -66,14 +65,12 @@ cleanDirt env robot = (True, newEnv)--CAMBIAR AL METODO GENERAL
                     where
                         newEnv = removeDirtAt (row robot) (column robot) env
 
---remove a given element form the environment SI FUNCIONA EL TOCONST LLEVAR ESTO A UN METODO GENERICO removeElementFrom
+--remove a given element form the environment
 removeDirtAt :: Int -> Int -> [Element] -> [Element]
 removeDirtAt x y [] = []
 removeDirtAt x y (e:rest) = if row e == x && column e == y && ((show $ toConstr (e)) == "Dirt")
                                 then rest
                                 else [e] ++ removeDirtAt x y rest  
-
--- CONSIDERAR CUANDO SE TIENE UN BEBE ENCIMA O HAY OTRO EN LA MISMA CASILLA
 
 --Stimate distance to closest dirt and move towards it
 --Returns a tuple with a boolean indicating if the robot could find the objective and the environment (modified accordingly if the move was ejected)
@@ -105,7 +102,7 @@ reallocateRobot robot newX newY env | newX == -1 = env
                                             env
                                 finalEnv = reallocateElementFromTo "Robot" robotX robotY robotCarriesBaby newX newY robotWBaby babyEnv True 
 
---Reallocate a specific element from a given postion to another --ELIMINAR REALLOCATEOBSTACLE y BABY
+--Reallocate a specific element from a given postion to another 
 reallocateElementFromTo:: String -> Int -> Int -> Bool -> Int -> Int -> Bool -> [Element] -> Bool -> [Element]
 reallocateElementFromTo elementName sourceX sourceY wcompany destX destY nwcompany env babyOrRobot = finalEnv
                     where
@@ -214,7 +211,7 @@ elementInList element (eName:rest) | (show $ toConstr (element)) == eName = True
                                    | otherwise = elementInList element rest
 
 --Returns is the tile is not occupied by an element of the given list
-freeOf :: Int -> Int -> [String] -> [Element] -> Bool--VALORAR COMO HACER PARA EVITAR LOS NINNOS TAMBIEN SI SE TIENE UNO CARGADO
+freeOf :: Int -> Int -> [String] -> [Element] -> Bool
 freeOf x y elementsToAvoid [] = True 
 freeOf x y elementsToAvoid (e:rest) = if row e == x && column e == y && (elementInList e elementsToAvoid)
                         then False
@@ -277,9 +274,9 @@ putBabyDown x y env = (True, finalEnv)
 
 --Find closest activity to do between chase babies or dirt
 stimateBestAnswer:: Int -> Int -> [Element] -> Element -> (Bool, [Element])
-stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)--para que pase lo de abajo revisar el orden en que re realiza la comprobacion
+stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)
                                       | otherwise = (False, env)
-    where--aqui se le estaria pasando por arriba a los bebes en cunas (a los cargados en teoria no pq se evitan por el robot)
+    where
         (bCoord, bDistance) = getNextStepToObjective rows cols robot "Baby" ["Robot", "Obstacle", "Playpen"] env 
         (dCoord, dDistance) = getNextStepToObjective rows cols robot "Dirt" ["Robot", "Obstacle", "Playpen"] env 
         (bX,bY) = bCoord--move robot towards closest baby 
@@ -294,13 +291,6 @@ stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)--para que pase 
                             else (bX,bY)
                     else (dX,dY)--at this point dX, dY can be -1 or not
         newEnv = reallocateRobot robot x y env
-
---TENER EN CUENTA QUE EL BEBE NO ESTE EN LA CUNA NI CARGADADO POR OTRO ROBOT
-
--- IMPORTANTE
---Si la basura rodea al ninno y este no se puede mover no limpiar y dejar libre hasta que el resto no este listo
-
---Valorar la posibilidad de tener mas de 1 agente en juego y que entre estos se repartan las tareas (Agentes sociables)
 
 
 -------------------------------------------------Agent 2-------------------------------------------------------------------

@@ -116,7 +116,6 @@ createDirt rows cols oldEnv newEnv = finalEnv
                                 babies = takeBabies oldEnv oldEnv
                                 finalEnv = createDirtAux rows cols babies babies oldEnv newEnv
 
---REMOVER EL OLD ENV QUE SE RECIVE AQUI QUE YA NO SE UTILIZA
 --Note que se cuentan en una casilla los bebes no cargados ni en corral
 createDirtAux :: Int -> Int -> [Element]-> [Element] -> [Element] -> [Element] -> [Element]
 createDirtAux rows cols [] babies oldEnv newEnv = newEnv 
@@ -130,7 +129,6 @@ createDirtAux rows cols (Baby x y wc:rest) babies oldEnv newEnv =  createDirtAux
 
 --Return an array with the coordinates of a grid centered in x, y
 getGridPos :: Int -> Int -> Int -> Int -> [(Int, Int)]
--- getGridPos rows cols x y = [(x,y)] ++ getValidPos rows cols x y -1 -1
 getGridPos rows cols x y = getValidPos rows cols x y 0 0
                         ++ getValidPos rows cols x y (-1) (-1)
                         ++ getValidPos rows cols x y (-1) 0

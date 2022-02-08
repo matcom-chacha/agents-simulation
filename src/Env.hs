@@ -39,7 +39,6 @@ freePos x y (e:rest) = if row e == x && column e == y
 withinBounds :: Int-> Int -> Int -> Int -> Bool
 withinBounds x y maxx maxy = x > 0 && x <= maxx && y >0 && y <= maxy
 
--- LLEVAR LUEGO QUE EL TABLERO NO ESTE LLENO
 --generate position and validate disponibility in the board
 generateRandomPos :: Int -> Int -> [Element]-> (Int, Int)
 generateRandomPos maxX maxY board | freePos newx newy board = (newx, newy)
@@ -51,8 +50,7 @@ generateRandomPos maxX maxY board | freePos newx newy board = (newx, newy)
 
 ------------------------------------------------PLAYPEN-------------------------------------------------
 
---GENERATE THE PLAYPEN In A MORE GENERAL WAY (MAYBE TAKING AN INITIAL POSITION AND EXPANDING IT)
---allocates the 1xp plapypen whitin a rxc board 
+--Allocates the 1xp plapypen whitin a rxc board 
 allocatePlaypen :: Int -> Int -> Int -> [Element]
 allocatePlaypen r c p = newEnv
                        where
@@ -77,7 +75,6 @@ allocatePlaypenWDir r c x y rp cp p env | freePos nextx nexty env && withinBound
                                           nextx = x+rp
                                           nexty = y+cp
 
---Utilizando el createElement fundir esto en un metodo que reciba el nombre de los elementos a crear
 ------------------------------------------------Obstacles-------------------------------------------------
 allocateObstacles :: Int -> Int -> Int -> [Element] -> [Element] 
 allocateObstacles rows cols 0 env  = env  

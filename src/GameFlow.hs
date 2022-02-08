@@ -56,7 +56,6 @@ fillMatrix (e:rest) board = fillMatrix rest newBoard
 
 --Get the corresponding string for a tile in the matrix representing the board
 getStringForMatrix :: String -> String -> Bool -> String
--- getStringForMatrix oldString elementName wc = "old"
 getStringForMatrix oldString elementName wc = newString
     where 
         elementRepresentation = elementLegend elementName wc
