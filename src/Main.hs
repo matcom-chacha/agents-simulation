@@ -21,10 +21,22 @@ import GameFlow
 
 main :: IO ()
 main = do
+  -- let a = "abcde"
+  -- let comparis = (a !! 2) /= ' '
+  -- print comparis
+  -- let comparis2 = (a !! 2) /= 'c'
+  -- print comparis2
+
+  -- print (a !! 2)
+
   -- foo 0 4 
+
   -- let rows = 5
   -- let cols = 5
   -- let env = [Dirt 4 5, Obstacle 4 1, Playpen 5 4, Playpen 5 5, Robot 4 2 False, Baby 3 1 True, Robot 3 1 True, Obstacle 1 1, Baby 1 2 False]
+  -- let envm = getEnvAsMatrix env rows cols
+  -- print envm
+
   -- let newEnv = moveBabies rows cols env
   -- print newEnv
 
@@ -46,7 +58,7 @@ main = do
 
   let initialEnv = initializeEnv rows cols obsts robots babys dirt
   print(initialEnv)
-  gameCicle rows cols robotTypes randomVariationTime simTime 0 initialEnv [] [] False
+  gameCicle rows cols robotTypes randomVariationTime simTime 0 initialEnv [] [] False 0
 
 
   -- gameCicle rows cols robotTypes randomVariationTime simTime currentTime env babiesEnv dirtEnv False
