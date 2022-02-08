@@ -3,7 +3,7 @@
 Gabriela B. Martínez Giraldo C 412
 
 El presente proyecto pretende hacer una implementación del problema presentado
-en el lenguaje de progremación Haskell.
+en el lenguaje de programación Haskell.
 
 ### Indicaciones generales:
 
