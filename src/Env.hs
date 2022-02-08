@@ -77,11 +77,6 @@ allocatePlaypenWDir r c x y rp cp p env | freePos nextx nexty env && withinBound
                                           nextx = x+rp
                                           nexty = y+cp
 
---Generar una posicion inicial
--- X Generar un orientacion (Horizontal/ Vertical). Inicialmente se pondra directo horzontal
---Comenzar a annadir celdas del corral mientras se pueda hacia una direccion (Por ahora comenzando siempre a la derecha)
---Cuando ya no se pueda ir a la otra direccion o si ya se acabaron las celdas por disponer terminar
-
 --Utilizando el createElement fundir esto en un metodo que reciba el nombre de los elementos a crear
 ------------------------------------------------Obstacles-------------------------------------------------
 allocateObstacles :: Int -> Int -> Int -> [Element] -> [Element] 

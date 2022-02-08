@@ -21,9 +21,6 @@ moveRobotsAux rows cols env (robot:rest) 1 envChanged = moveRobotsAux rows cols 
                                                 where
                                                     (couldMove, newEnv) = moveR2B2 rows cols env robot 
                                                     nEnvChanged = couldMove || envChanged                                               
--- moveRobotsAux rows cols env (robot:rest) 2 = moveRobotsAux rows cols newEnv rest 2
---                                                 where
---                                                     newEnv = moveC3PO rows cols env robot 
 
 --Return all robot currently in simulation
 takeRobots :: [Element] -> [Element] -> [Element]
@@ -33,7 +30,6 @@ takeRobots (e:rest) env = takeRobots rest env
 
 -------------------------------------------------Agent 1------------------------------------------------------------
 
---SI NO SE PUEDE REALIZAR UNA ACCION IR A LA OTRA
 moveR2B2 :: Int -> Int -> [Element] -> Element -> ( Bool, [Element])
 moveR2B2 rows cols env robot | uponDirt env robot && result1 = (result1, env1)--CAMBIAR POR EL METODO GENRICO IsElementVAtXY
                   | wChild && length (freeBabies) == 0 && result2 = (result2, env2)
@@ -301,26 +297,8 @@ stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)--para que pase 
 
 --TENER EN CUENTA QUE EL BEBE NO ESTE EN LA CUNA NI CARGADADO POR OTRO ROBOT
 
--- -- --Return a list with the free babies in the given environment (those outisde of playpens and that are not carried by any robot)
--- -- getFreeBabies :: [Element] -> [Element] same as takeBabies
--- -- getFreeBabies env
-
---Pasos a seguir por el robot:
---Si tiene un ninno en brazos y no hay mas ninnos sueltos limpiar. Calcular la distancia min al churre por bfs
---Si tiene un ninno en brazos y hay mas sueltos dejarlo en la cuna mas cercana limpiando en el camino ( tratar de no bloquear esta)
-    --Sino Calcular la distancia min a los ninnos y el churre por bfs. Seguir a uno de estos, el que este mas cercano
-
---Si esta parado sobre churre limpiar
-
---Moverse en la direccion elegida si no se eligio limpiar. (De tener un ninno en brazos 2 pasos de ser posible)
-
 -- IMPORTANTE
 --Si la basura rodea al ninno y este no se puede mover no limpiar y dejar libre hasta que el resto no este listo
-
-
---Casos de parada de la simulacion:
---El env que devuelve el robot es el mismo y el que devuelven los bebes tambien
-
 
 --Valorar la posibilidad de tener mas de 1 agente en juego y que entre estos se repartan las tareas (Agentes sociables)
 

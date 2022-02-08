@@ -12,6 +12,7 @@ takeBabies (Baby x y c:rest) env | not ( inPlayPen (Baby x y c) env ) && not c =
                              | otherwise =  takeBabies rest env
 takeBabies (e:rest) env = takeBabies rest env
 
+--Check wether the given postion contains a playpen or not
 inPlayPen :: Element -> [Element] -> Bool
 inPlayPen (Baby x y w) [] = False
 inPlayPen (Baby x y w) (Playpen ex ey:rest) | ex == x && ey == y = True
@@ -187,6 +188,7 @@ allocateNewDirt dirtToGenerate availablePos env = newDirt ++ allocateNewDirt (di
                             newDirt = [Dirt dx dy]
                             newAvailablePos = removeNthElement randIndex availablePos
 
+--Remove nth element of an array
 removeNthElement :: Int -> [(Int, Int)] -> [(Int, Int)] 
 removeNthElement 0 (e: rest) = rest 
 removeNthElement index (e: rest) = [e] ++ removeNthElement (index - 1) rest
