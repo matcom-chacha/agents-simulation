@@ -14,7 +14,7 @@ main = do
   let robots = 2
   let babys = 2
   let dirt = 2
-  let robotTypes = 1
+  let robotTypes = 2
   let randomVariationTime = 4
   let maxSimTime = 10
   startSimulation rows cols obsts robots babys dirt robotTypes randomVariationTime maxSimTime

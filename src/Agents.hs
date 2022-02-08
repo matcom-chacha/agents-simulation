@@ -21,6 +21,10 @@ moveRobotsAux rows cols env (robot:rest) 1 envChanged = moveRobotsAux rows cols 
                                                 where
                                                     (couldMove, newEnv) = moveR2B2 rows cols env robot 
                                                     nEnvChanged = couldMove || envChanged                                               
+moveRobotsAux rows cols env (robot:rest) 2 envChanged = moveRobotsAux rows cols newEnv rest 2 nEnvChanged
+                                                where
+                                                    (couldMove, newEnv) = moveC3PO rows cols env robot 
+                                                    nEnvChanged = couldMove || envChanged                                               
 
 --Return all robot currently in simulation
 takeRobots :: [Element] -> [Element] -> [Element]
@@ -153,7 +157,9 @@ getNextStepToObjective rows cols robot destName elementsToAvoid env = ((nextx, n
 --Return the next tile to visit in a given path when a certain amount of steps can be taken by the robot
 chooseNextTile :: [(Int, Int)] -> Int -> (Int, Int)
 chooseNextTile path possibleSteps | possibleSteps >=2 && length path > possibleSteps = path !! possibleSteps
-                                  | otherwise = path !! 1
+                                  | (length path) > 1 = path !! 1--added check for avoiding index too large error
+                                  | otherwise = (-1,-1)
+
 
 --Perform a bfs from source to closest kind of element (with destName)
 bfs :: Int -> Int -> String -> [String] -> Int -> Int -> [Element] -> (Matrix Int, (Int, Int, Int))
@@ -295,9 +301,33 @@ stimateBestAnswer rows cols env robot | x /= -1 = (True, newEnv)
 
 -------------------------------------------------Agent 2-------------------------------------------------------------------
 
---Agente proactivo-> objetivo capturar los ninnos
+--Proactive agent-> objective: capture babies
+moveC3PO :: Int -> Int -> [Element] -> Element -> ( Bool, [Element])
+moveC3PO rows cols env robot 
+                  | wChild && length (freeBabies) == 0 && findDirtResult = (findDirtResult, findDirtEnv)
+                  | wChild && (length (freeBabies) > 0 || length (dirt) == 0 )  && findPlaypenResult = (findPlaypenResult, findPlaypenEnv)
+                  | not wChild && findBabyResult = (findBabyResult, findBabyEnv)
+                  | uponDirt env robot && cleanResult = (cleanResult, cleanEnv)
+                  | otherwise = (findDirtResult, findDirtEnv)--findDirt
+                  where
+                      wChild = wcompany robot
+                      freeBabies = takeBabies env env
+                      dirt = takeDirt env env
+                      (findDirtResult, findDirtEnv) = findDirt rows cols env robot 
+                      (findPlaypenResult, findPlaypenEnv) = findPlaypen rows cols env robot 
+                      (findBabyResult, findBabyEnv) = findBaby rows cols env robot 
+                      (cleanResult, cleanEnv) = cleanDirt env robot
+
+--Stimate distance to closest baby and move towards it
+--Returns a tuple with a boolean indicating if the robot could find the objective and the environment (modified accordingly if the move was ejected)
+findBaby :: Int -> Int -> [Element] -> Element -> (Bool, [Element])
+findBaby rows cols env robot | x /= -1 =  (True, newEnv)
+                             | otherwise = (False, env)
+                    where
+                        (coord, distance) = getNextStepToObjective rows cols robot "Baby" ["Robot", "Obstacle", "Playpen"] env  
+                        (x, y) = coord
+                        newEnv = reallocateRobot robot x y env 
+       
 
 --Si tiene un ninno a 2 o menos pasos de distancia (y no carga otro) acercarse (aunque este sobre suciedad)
-
--- moveC3PO :: [Element] -> [Element]
 --Como es mas fino solo persigue a los ninnos, no limpia
