@@ -37,17 +37,25 @@ takeRobots (e:rest) env = takeRobots rest env
 moveR2B2 :: Int -> Int -> [Element] -> Element -> ( Bool, [Element])
 moveR2B2 rows cols env robot | uponDirt env robot && result1 = (result1, env1)--CAMBIAR POR EL METODO GENRICO IsElementVAtXY
                   | wChild && length (freeBabies) == 0 && result2 = (result2, env2)
-                  | wChild && length (freeBabies) > 0 && result3 = (result3, env3)
+                  | wChild && (length (freeBabies) > 0 || length (dirt) == 0 )  && result3 = (result3, env3)
                   | not wChild && result4 = (result4, env4)-- entre este y el paso de limpiar suciedad en se podria valorar que tan cerca esta el bebe y entonces actuar
                   | otherwise = (False, env)
                   where
                       wChild = wcompany robot
                       freeBabies = takeBabies env env
+                      dirt = takeDirt env env
                       (result1, env1) = cleanDirt env robot
                       (result2, env2) = findDirt rows cols env robot 
                       (result3, env3) = findPlaypen rows cols env robot 
                       (result4, env4) = stimateBestAnswer rows cols env robot 
 
+
+-- takeDirt env --Hacer un take x general
+--Return the dirty tiles in the env
+takeDirt :: [Element] -> [Element] -> [Element]
+takeDirt [] env = []  
+takeDirt (Dirt x y:rest) env = [Dirt x y] ++ takeDirt rest env
+takeDirt (e:rest) env = takeDirt rest env
 
 --Return wether a given robot is positioned over a dirty tile or not
 uponDirt :: [Element] -> Element -> Bool 
@@ -266,7 +274,7 @@ putBabyDown :: Int -> Int -> [Element] -> (Bool, [Element])
 putBabyDown x y env = (True, finalEnv)
         where
             newEnv1 = removeElementFrom "Baby" x y True env True
-            newEnv2 = removeElementFrom "Robot" x y True env True
+            newEnv2 = removeElementFrom "Robot" x y True newEnv1 True
             baby = Baby x y False
             robot = Robot x y False
             finalEnv = newEnv2 ++ [baby] ++ [robot]

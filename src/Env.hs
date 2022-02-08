@@ -82,34 +82,38 @@ allocatePlaypenWDir r c x y rp cp p env | freePos nextx nexty env && withinBound
 --Comenzar a annadir celdas del corral mientras se pueda hacia una direccion (Por ahora comenzando siempre a la derecha)
 --Cuando ya no se pueda ir a la otra direccion o si ya se acabaron las celdas por disponer terminar
 
+--Utilizando el createElement fundir esto en un metodo que reciba el nombre de los elementos a crear
 ------------------------------------------------Obstacles-------------------------------------------------
 allocateObstacles :: Int -> Int -> Int -> [Element] -> [Element] 
 allocateObstacles rows cols 0 env  = env  
-allocateObstacles rows cols obsts env  = [Obstacle x y] ++ allocateObstacles rows cols (obsts-1) env
+allocateObstacles rows cols obsts env  = allocateObstacles rows cols (obsts-1) newEnv
                                         where
                                             (x, y) = generateRandomPos rows cols env
+                                            newEnv = env ++ [Obstacle x y]
 
 
 ------------------------------------------------Robots-------------------------------------------------
 allocateRobots :: Int -> Int -> Int -> [Element] -> [Element] 
 allocateRobots rows cols 0 env  = env  
-allocateRobots rows cols robots env  = [Robot x y False] ++ allocateRobots rows cols (robots-1) env
+allocateRobots rows cols robots env  = allocateRobots rows cols (robots-1) newEnv
                                         where
                                             (x, y) = generateRandomPos rows cols env
-
+                                            newEnv = env ++ [Robot x y False]
 
 ------------------------------------------------Babys-------------------------------------------------
 allocateBabys :: Int -> Int -> Int -> [Element] -> [Element] 
 allocateBabys rows cols 0 env  = env  
-allocateBabys rows cols babys env  = [Baby x y False] ++ allocateBabys rows cols (babys-1) env
+allocateBabys rows cols babys env  = allocateBabys rows cols (babys-1) newEnv
                                         where
                                             (x, y) = generateRandomPos rows cols env
+                                            newEnv = env ++ [Baby x y False]
 
 
 ------------------------------------------------Dirt-------------------------------------------------
 allocateDirt :: Int -> Int -> Int -> [Element] -> [Element] 
 allocateDirt rows cols 0 env  = env  
-allocateDirt rows cols dirt env  = [Dirt x y] ++ allocateDirt rows cols (dirt-1) env
+allocateDirt rows cols dirt env  = allocateDirt rows cols (dirt-1) newEnv
                                         where
                                             (x, y) = generateRandomPos rows cols env
+                                            newEnv = env ++ [Dirt x y]
 

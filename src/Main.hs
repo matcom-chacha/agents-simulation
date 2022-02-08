@@ -8,8 +8,31 @@ import Agents
 import Data.Matrix
 import GameFlow
 
+-- foo :: Int -> Int -> IO ()
+-- foo currentTime randomVariationTime | currentTime == 20 = putStrLn "Finito"
+-- foo currentTime randomVariationTime = do
+--   let rest = mod currentTime randomVariationTime 
+--       timeToGenDirt = (rest == 0) in putStrLn (show rest) 
+--   foo (currentTime +1) randomVariationTime
+-- foo :: Int -> IO Int
+-- foo i = do
+--   putStrLn "Function has run!"
+--   return (i * 2)
+
 main :: IO ()
 main = do
+  -- foo 0 4 
+  -- let rows = 5
+  -- let cols = 5
+  -- let env = [Dirt 4 5, Obstacle 4 1, Playpen 5 4, Playpen 5 5, Robot 4 2 False, Baby 3 1 True, Robot 3 1 True, Obstacle 1 1, Baby 1 2 False]
+  -- let newEnv = moveBabies rows cols env
+  -- print newEnv
+
+  -- bar1 <- foo 6
+  -- bar2 <- foo bar1
+  -- -- print( bar1, bar2)
+  -- print("hello")
+
   let rows = 5
   let cols = 5
   let obsts = 2
@@ -21,12 +44,14 @@ main = do
   let randomVariationTime = 4
   let simTime = 10
 
-  let (initialEnv, finalState, finalEnv ) = startSimulation rows cols obsts robots babys dirt robotTypes randomVariationTime simTime
-  print initialEnv
-  print finalState
-  print finalEnv
+  let initialEnv = initializeEnv rows cols obsts robots babys dirt
+  print(initialEnv)
+  gameCicle rows cols robotTypes randomVariationTime simTime 0 initialEnv [] [] False
 
-  
+
+  -- gameCicle rows cols robotTypes randomVariationTime simTime currentTime env babiesEnv dirtEnv False
+  -- print finalState
+
   -- let a = mod 4 3
   -- print a
   
